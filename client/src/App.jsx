@@ -8,19 +8,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Home from "./components/Home.jsx";
 import Login from "./components/Login.jsx"; 
-import Register from './components/SignUp.jsx';
-import Profile from './components/Profile.jsx';
-import Loves from './components/Love.jsx';
-// import Display from './components/DisplayPage.jsx';
-import Dashboard from "./components/Dashboard.jsx";
-import Date from './components/Date.jsx'
-import DatingSurvey from './components/DatingSurvey.jsx'
-import Matches from "./components/Matches.jsx";
-import Swipe from "./components/Swipe.jsx";
+
 import { Navigate } from "react-router-dom";
-import Search from './components/Search.jsx';
-import Payment from './components/Payment.jsx';
-import DisplayUser from "./components/DisplayUser.jsx";
 import "./App.css";
 import Header from "./components/Header.jsx";
 import { createTheme, ThemeProvider } from "@mui/material";
@@ -85,20 +74,6 @@ const theme = createTheme({
       <Routes>
         <Route path="/" element={<Home log={openSnackbar} />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Register />} />
-        <Route path="/swipe" element={<ProtectedRoute><Swipe /></ProtectedRoute>} />
-
-        <Route path="/Love" element={<ProtectedRoute><DisplayUser /></ProtectedRoute>} />
-        <Route path="/Search" element={<ProtectedRoute><Search /></ProtectedRoute>} />
-        <Route path="/Payment" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
-        <Route path="/DisplayUser" element={<ProtectedRoute><DisplayUser /></ProtectedRoute>} />
-        <Route path="/Loves" element={<ProtectedRoute><Loves /></ProtectedRoute>} />
-
-        <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-        <Route path="/date" element={<ProtectedRoute><Date /></ProtectedRoute>} />
-
-        <Route path="/DatingSurvey" element={<ProtectedRoute><DatingSurvey /></ProtectedRoute>} />
-        <Route path="/Dashboard" element={<ManagerRoute><Dashboard /></ManagerRoute>} />
       </Routes>
       <div className="background"></div>
 

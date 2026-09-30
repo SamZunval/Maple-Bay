@@ -6,8 +6,6 @@ import {
 } from '@mui/material';
 
 import logo from "../assets/Ducky.png";
-import Search from "./Search";
-import Alert from "./Alert";
 import Login from "./Login";
 
 const Home = () => {
