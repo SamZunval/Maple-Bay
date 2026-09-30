@@ -9,19 +9,11 @@ import {  retrieveUsers,
     removeUser,
     updateUser,
     addImage,
-    addSkills,
     removeImage,
     retrieveImages,
     retrieveImage,
-    likeUser,
     loginUser,
-    getMatches,
-    addSurvey,
-    retrieveSurveys,
-    blockUser,
-    retrieveRecomendedMatches,
-    updateCount,
-    retrieveStats} from './data.js';
+    blockUser} from './data.js';
 
 import * as colors from "./colors.js";
 import * as data from "./messager.js";
@@ -45,35 +37,6 @@ app.use((req, _res, next) => {
 });
 // Endpoint Definitions
 //stats
-app.get('/stats', async (_request, response) => {
-    let users = await retrieveStats();
-    response.json(users);
-});
-app.post('/updateCount', async (_request, response) => {
-    try {
-        await updateCount();
-        response.sendStatus(200);
-    }
-    catch (e) {
-        console.error(e);
-        response.sendStatus(500);
-    }
-});
-//surveys
-app.get('/surveys', async (_request, response) => {
-    let users = await retrieveSurveys();
-    response.json(users);
-});
-app.post('/db/addsurvey', async (_request, response) => {
-    try {
-        let good = await addSurvey(_request.body);
-        response.sendStatus(200);
-    }
-    catch (e) {
-        console.error(e);
-        response.sendStatus(500);
-    }
-});
 //users
 app.get('/users', async (_request, response) => {
     let users = await retrieveUsers();
@@ -85,35 +48,12 @@ app.get('/users/:what', async (_request, response) => {
     let users = await retrieveUser(user_id);
     response.json(users);
 });
-app.get('/users/recomended/:what', async (_request, response) => {
-    const user_id = _request.params.what;
-    let users = await retrieveRecomendedMatches(user_id);
-    response.json(users);
-});
 app.get('/users/login/:username-:password', async (_request, response) => {
     try {
         const username_id = _request.params.username;
         const password_id = _request.params.password;
         let users = await loginUser(username_id,password_id);
         response.json(users);
-    }
-    catch (e) {
-        console.error(e);
-        response.sendStatus(500);
-    }
-});
-app.get('/users/likes/:what', async (_request, response) => {
-    const userName = _request.params.what;
-    console.log("looking for matches for: " + userName);
-    let matches = await getMatches(userName);
-    response.json(matches);
-});
-app.post('/users/like/:liker-:liked', async (_request, response) => {
-    try {
-        const liker = _request.params.liker;
-        const liked = _request.params.liked;
-        await likeUser(liker,liked);
-        response.sendStatus(200);
     }
     catch (e) {
         console.error(e);
@@ -198,17 +138,6 @@ app.get('/image/:what', async (_request, response) => {
     const image_id = _request.params.what;
     let images = await retrieveImage(image_id);
     response.json(images);
-});
-//Updating the skills of a user 
-app.post('/db/addskills', async (_request, response) => {
-    try {
-        await addSkills(_request.body);
-        response.sendStatus(200);
-    }
-    catch (e) {
-        console.error(e);
-        response.sendStatus(500);
-    }
 });
 /*
 app.get('/bookmark', function (req, res) {//handles routing for the client
