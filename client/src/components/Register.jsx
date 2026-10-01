@@ -50,9 +50,6 @@ const Register = () => {
     const handleChange = (e) => {
        setRegisterData({ ...registerData, [e.target.name]: e.target.value });
     };
-    const disableSubmit = () => {
-       return ((registerData.userType == "business") && (!registerData.businessName)) ||((registerData.userType == "personal") && (!registerData.firstName || !registerData.lastName)) ||!registerData.password||!registerData.province||!registerData.city||!registerData.email;
-    };
     const handleClickShowPassword = () => setShowPassword(!showPassword);
     const handleImageChange = (e) => {
         const file = e.target.files[0];
