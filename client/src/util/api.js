@@ -12,24 +12,6 @@ const headers = {
 
 const serverRoute = (route) => `${API_IP}:${API_PORT}/${route}`;
 const stats = {
-    getStats: async () => {
-        let response = await fetch(serverRoute("stats"), {
-            headers,
-            method: 'GET'
-        });
-        let data = await response.json();
-        return data;
-    },
-    updateCount: async () => {
-        let response = await fetch(serverRoute("updateCount"), {
-            headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-            },
-            method: 'POST',
-        });
-        return response;
-    }
 }
 const users = {
     getUsers: async () => {
@@ -56,16 +38,6 @@ const users = {
         let data = await response.json();
         return data;
     },
-    likeUser: async (username, username2) => {
-        let response = await fetch(serverRoute("users/like/" + username + "-" +username2), {
-            headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-            },
-            method: 'POST',
-        });
-        return response;
-    }, 
     blockUser: async (username, username2) => {
         let response = await fetch(serverRoute("users/block/" + username + "-" +username2), {
             headers: {
@@ -76,22 +48,6 @@ const users = {
         });
         return response;
     }, 
-    getRecomendations: async (userName) => {
-        let response = await fetch(serverRoute("users/recomended/"+userName), {
-            headers,
-            method: 'GET'
-        });
-        let data = await response.json();
-        return data;
-    },
-    getMatches: async (userName) => {
-        let response = await fetch(serverRoute("users/likes/"+userName), {
-            headers,
-            method: 'GET'
-        });
-        let data = await response.json();
-        return data;
-    },
     postUser: async (user) => {
         let response = await fetch(serverRoute("db/adduser"), {
             headers: {
@@ -130,26 +86,7 @@ const users = {
     },
 }
 const surveys = {
-    getSurveys: async () => {
-        let response = await fetch(serverRoute("surveys"), {
-            headers,
-            method: 'GET'
-        });
-        let data = await response.json();
-        return data;
-    },
-    postSurvey: async (user) => {
-        let response = await fetch(serverRoute("db/addsurvey"), {
-            headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-            },
-            method: 'POST',
-            json: true, 
-            body: JSON.stringify(user),
-        });
-        return response;
-    }
+    
 }
 const images = {
     postImage: async (image) => {
@@ -194,10 +131,74 @@ const images = {
         return data;
     },
 }
+const products =  {
+    postProduct: async (product) => {
+        let response = await fetch(serverRoute("db/addproduct"), {
+            headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+            },
+            method: 'POST',
+            json: true, 
+            body: JSON.stringify(product),
+        });
+        return response;
+    },
+    updateProduct: async (product) => {
+        let response = await fetch(serverRoute("db/updateproduct"), {
+            headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+            },
+            method: 'POST',
+            json: true, 
+            body: JSON.stringify(product),
+        });
+        return response;
+    },
+    getProducts: async () => {
+        let response = await fetch(serverRoute("products"), {
+            headers,
+            method: 'GET'
+        });
+        let data = await response.json();
+        return data;
+    },
+    getUserProducts: async (user_id) => {
+        let response = await fetch(serverRoute("products/"+user_id), {
+            headers,
+            method: 'GET'
+        });
+        let data = await response.json();
+        return data[0];
+    },
+    getProduct: async (user_id) => {
+        let response = await fetch(serverRoute("product/"+user_id), {
+            headers,
+            method: 'GET'
+        });
+        let data = await response.json();
+        return data[0];
+    },
+    removeProduct: async (product_id) => {
+        let response = await fetch(serverRoute("db/removeproduct/"+product_id), {
+            headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+            },
+            method: 'POST',
+            json: true, 
+            body: JSON.stringify(product_id),
+        });
+        let data = await response.json();
+        return data[0];
+    },
+}
 
 export {
     users,
     images,
     surveys,
-    stats
+    stats,
+    products
 }

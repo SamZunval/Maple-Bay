@@ -80,7 +80,7 @@ const Header = (props) => {
           <Button style={{ color: "#fffefe" }} onClick={() => navigate("/login")} >Login</Button>
         }        
         {!isLoggedIn() &&
-          <Button style={{ color: "#fffefe" }} onClick={() => navigate("/signup")} >Sign Up </Button>
+          <Button style={{ color: "#fffefe" }} onClick={() => navigate("/register")} >Register </Button>
         }
        
         {isLoggedIn() && (

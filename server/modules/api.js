@@ -13,7 +13,13 @@ import {  retrieveUsers,
     retrieveImages,
     retrieveImage,
     loginUser,
-    blockUser} from './data.js';
+    blockUser,
+    addProduct,
+    removeProduct,
+    updateProduct,
+    retrieveProducts,
+    retrieveProduct,
+    retrieveUserProducts} from './data.js';
 
 import * as colors from "./colors.js";
 import * as data from "./messager.js";
@@ -137,6 +143,56 @@ app.get('/images/:what', async (_request, response) => {
 app.get('/image/:what', async (_request, response) => {
     const image_id = _request.params.what;
     let images = await retrieveImage(image_id);
+    response.json(images);
+});
+//products
+app.post('/db/addproduct', async (_request, response) => {
+    try {
+        let good = await addProduct(_request.body);
+        if(good){
+            response.sendStatus(200);
+        }
+        else {
+            response.sendStatus(400);
+        }
+    }
+    catch (e) {
+        console.error(e);
+        response.sendStatus(500);
+    }
+});
+app.post('/db/removeproduct', async (_request, response) => {
+    try {
+        await removeProduct(_request.body);
+        response.sendStatus(200);
+    }
+    catch (e) {
+        console.error(e);
+        response.sendStatus(500);
+    }
+});
+app.post('/db/updateproduct', async (_request, response) => {
+    try {
+        await updateProduct(_request.body);
+        response.sendStatus(200);
+    }
+    catch (e) {
+        console.error(e);
+        response.sendStatus(500);
+    }
+});
+app.get('/products', async (_request, response) => {
+    let users = await retrieveProducts();
+    response.json(users);
+});
+app.get('/products/:what', async (_request, response) => {
+    const user_id = _request.params.what;
+    let images = await retrieveUserProducts(user_id);
+    response.json(images);
+});
+app.get('/product/:what', async (_request, response) => {
+    const image_id = _request.params.what;
+    let images = await retrieveProduct(image_id);
     response.json(images);
 });
 /*
