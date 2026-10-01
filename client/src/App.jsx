@@ -70,7 +70,7 @@ const theme = createTheme({
   return (<ThemeProvider theme={theme}>
     
     <BrowserRouter>
-      <Header appTitle="Duck Dating" log={openSnackbar} />
+      <Header appTitle="Maple Bay" log={openSnackbar} />
     
       <Routes>
         <Route path="/" element={<Home log={openSnackbar} />} />

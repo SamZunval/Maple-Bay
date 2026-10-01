@@ -6,7 +6,9 @@ import {
     TextField,
     Button,
     Alert,
-    Box
+    Box,
+    ToggleButton,
+    ToggleButtonGroup
 } from "@mui/material";
 import { Avatar } from "@mui/material";
 import { 
@@ -27,19 +29,30 @@ const Register = () => {
     const [registerData, setRegisterData] = useState({
         firstName: "",
         lastName: "",
+        businessName: "",
         email: "",
         password: "",
         province: "",
         city: "",
+        userType: "personal"
     });
     const [image, setImage] = useState(null);   
 
     const [error, setError] = useState("");
 
+    const [uType, setuType] = useState("personal");
+
+    const handleButtonChange = (event, newType) => {
+        setuType(newType);
+        setRegisterData({ ...registerData, ["userType"]: newType });
+    };
+
     const handleChange = (e) => {
        setRegisterData({ ...registerData, [e.target.name]: e.target.value });
     };
-
+    const disableSubmit = () => {
+       return ((registerData.userType == "business") && (!registerData.businessName)) ||((registerData.userType == "personal") && (!registerData.firstName || !registerData.lastName)) ||!registerData.password||!registerData.province||!registerData.city||!registerData.email;
+    };
     const handleClickShowPassword = () => setShowPassword(!showPassword);
     const handleImageChange = (e) => {
         const file = e.target.files[0];
@@ -101,8 +114,21 @@ const Register = () => {
                             />
                         </Button>
                     </Box>
-                    
+
+                    {/*Company or user*/}
+                    <ToggleButtonGroup
+                        color="primary"
+                        value={uType}
+                        exclusive
+                        onChange={handleButtonChange}
+                        aria-label="User Type"
+                    >
+                    <ToggleButton value="personal">Personal</ToggleButton>
+                    <ToggleButton value="business">Business</ToggleButton>
+                    </ToggleButtonGroup>
+
                     {/* Form Fields */}
+                    {uType == "personal" &&
                     <Box sx={{ display: "flex", gap: 2, }}>
                         <TextField fullWidth label="First Name" name="firstName" 
                             value={registerData.firstName} onChange={handleChange} sx={{ mb: "1em" }} />
@@ -110,6 +136,14 @@ const Register = () => {
                         <TextField fullWidth label="Last Name" name="lastName" 
                             value={registerData.lastName} onChange={handleChange} sx={{ mb: "1em" }} />
                     </Box>
+                    }
+                    {uType == "business" &&
+                    <Box sx={{ display: "flex", gap: 2, }}>
+                        <TextField fullWidth label="Business Name" name="businessName" 
+                            value={registerData.businessName} onChange={handleChange} sx={{ mb: "1em" }} />
+                    </Box>
+                    }
+
 
                     <TextField fullWidth label="Password" name="password" type={showPassword ? "text" : "password"}
                         value={registerData.password} onChange={handleChange} sx={{ mb: "1em" }} 
@@ -140,7 +174,7 @@ const Register = () => {
                    
 
                     <Button fullWidth variant="contained" 
-                        disabled={!registerData.firstName || !registerData.lastName ||!registerData.password||!registerData.province||!registerData.city||!registerData.email}
+                        disabled={((registerData.userType == "business") && (!registerData.businessName)) ||((registerData.userType == "personal") && (!registerData.firstName || !registerData.lastName)) ||!registerData.password||!registerData.province||!registerData.city||!registerData.email}
                         onClick={handleRegister}
                         sx={{ backgroundColor: "#f680dc", "&:hover": { backgroundColor: "#d46bb8" } }}
                     >
