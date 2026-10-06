@@ -6,6 +6,22 @@ const DATABASE_NAME = "MapleStorage";
 const IMAGE_COLLECTION = "Images";
 const USER_COLLECTION = "Users";
 const PRODUCT_COLLECTION = "Products";
+import crypto from 'node:crypto';
+function hashPassword(password, salt) {
+    return new Promise((resolve, reject) => {
+        const iterations = 10000;
+        const keylen = 64;
+        const digest = 'sha512';
+
+        crypto.pbkdf2(password, salt, iterations, keylen, digest, (err, key) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(key.toString('hex'));
+            }
+        })
+    });
+}
 const retrieveUsers = async () => {
     let users = [];
 
@@ -78,8 +94,11 @@ const loginUser = async (userName, password) => {
 
         //add like in both entries
         user = await db.findDocument(context, DATABASE_NAME, USER_COLLECTION, {email : userName}, {});
-        if(user && user != {} && user != [] && Object.keys(user).length != 0 && password == user.password){
-            loggedIn = user;
+        if(user && user != {} && user != [] && Object.keys(user).length != 0){
+            var derivedKey = await hashPassword(password,user.salt)
+            if(derivedKey == user.hash){
+                loggedIn = user;
+            }
         }
     }
     catch (e) {
@@ -100,6 +119,9 @@ const addUser = async (user) => {
 
         let found = await db.findDocument(context, DATABASE_NAME, USER_COLLECTION, {firstName : user.firstName, lastName : user.lastName}, {});
         if(found == null){
+            user.salt = crypto.randomBytes(128).toString('base64');
+            user.hash = await hashPassword(user.password,user.salt);
+            delete user.password;
             let result = await db.insertDocument(context, DATABASE_NAME, USER_COLLECTION, user);
             return true;
         }
