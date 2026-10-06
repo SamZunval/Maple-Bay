@@ -117,7 +117,7 @@ const addUser = async (user) => {
         // Initialize the database
         context = await db.initDatabase(env.DB_URI);
 
-        let found = await db.findDocument(context, DATABASE_NAME, USER_COLLECTION, {firstName : user.firstName, lastName : user.lastName}, {});
+        let found = await db.findDocument(context, DATABASE_NAME, USER_COLLECTION, {email: user.email}, {});
         if(found == null){
             user.salt = crypto.randomBytes(128).toString('base64');
             user.hash = await hashPassword(user.password,user.salt);

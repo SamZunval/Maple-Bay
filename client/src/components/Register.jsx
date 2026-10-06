@@ -7,8 +7,9 @@ import {
     Button,
     Alert,
     Box,
-    ToggleButton,
-    ToggleButtonGroup
+    Radio,
+    RadioGroup,
+    FormControlLabel
 } from "@mui/material";
 import { Avatar } from "@mui/material";
 import { 
@@ -113,16 +114,16 @@ const Register = () => {
                     </Box>
 
                     {/*Company or user*/}
-                    <ToggleButtonGroup
+                    <RadioGroup
                         color="primary"
                         value={uType}
-                        exclusive
                         onChange={handleButtonChange}
                         aria-label="User Type"
+                        row
                     >
-                    <ToggleButton value="personal">Personal</ToggleButton>
-                    <ToggleButton value="business">Business</ToggleButton>
-                    </ToggleButtonGroup>
+                    <FormControlLabel value="personal" control={<Radio />} label="Personal" />
+                    <FormControlLabel value="business" control={<Radio />} label="Business" />
+                    </RadioGroup>
 
                     {/* Form Fields */}
                     {uType == "personal" &&
