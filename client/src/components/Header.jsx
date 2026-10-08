@@ -72,7 +72,7 @@ const Header = (props) => {
   
     <AppBar position="sticky">
       <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
-        <Typography variant="h6">
+        <Typography variant="h6" onClick={() => navigate("/")} style={{ cursor: "pointer" }}>
           {props.appTitle}
         </Typography>
         <div style={{ flex: 1 }} />
@@ -80,7 +80,7 @@ const Header = (props) => {
           <Button style={{ color: "#fffefe" }} onClick={() => navigate("/login")} >Login</Button>
         }        
         {!isLoggedIn() &&
-          <Button style={{ color: "#fffefe" }} onClick={() => navigate("/register")} >Register </Button>
+          <Button style={{ color: "#fffefe" }} onClick={() => navigate("/signup")} >Signup </Button>
         }
        
         {isLoggedIn() && (
@@ -93,7 +93,7 @@ const Header = (props) => {
         )}
 
         <Menu anchorEl={anchor} open={Boolean(anchor)} onClose={() => setAnchor(null)}  
-        PaperProps={{sx: {backgroundColor: "#f680dc", color: "#fffefe",minWidth: "250px"},
+        PaperProps={{sx: {backgroundColor: "primary.main", color: "black",minWidth: "250px"},
         }}
          >
           <MenuItem 

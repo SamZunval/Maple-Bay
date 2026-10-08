@@ -8,13 +8,14 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Home from "./components/Home.jsx";
 import Login from "./components/Login.jsx"; 
+import Signup from "./components/Signup.jsx";
 import Register from "./components/Register.jsx";
+
 
 import { Navigate } from "react-router-dom";
 import "./App.css";
 import Header from "./components/Header.jsx";
 import { createTheme, ThemeProvider } from "@mui/material";
-
   const ProtectedRoute = ({ children }) => {
       if (!sessionStorage.getItem("userInfo")) {
           alert("Please log in to access this page.");
@@ -56,13 +57,19 @@ function App() {
 const theme = createTheme({
   palette: {
     primary: {
-      main: "#f680dc"
+      main: "#9395D3"
+    },
+    secondary: {
+      main: "#B3B7EE"
     },
 
   text:{
-    primary: "#3d0f3e"
+    primary: "#black"
       }
-  }
+  },
+   typography: {
+        fontFamily: "Oxanium, sans-serif",
+    },
  
 });
 
@@ -75,6 +82,7 @@ const theme = createTheme({
       <Routes>
         <Route path="/" element={<Home log={openSnackbar} />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
         <Route path="/register" element={<Register />} />
       </Routes>
       <div className="background"></div>
