@@ -6,4 +6,4 @@ To run the server:
 To run client:
 -   In client folder run: npm run dev
 
-- you need to install node using npm instal
+- you need to install node using npm install

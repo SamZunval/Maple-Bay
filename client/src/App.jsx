@@ -10,6 +10,8 @@ import Home from "./components/Home.jsx";
 import Login from "./components/Login.jsx"; 
 import Signup from "./components/Signup.jsx";
 import Register from "./components/Register.jsx";
+import Profile from "./components/Profile.jsx";
+
 
 
 import { Navigate } from "react-router-dom";
@@ -74,7 +76,8 @@ const theme = createTheme({
 });
 
 
-  return (<ThemeProvider theme={theme}>
+  return (
+  <ThemeProvider theme={theme}>
     
     <BrowserRouter>
       <Header appTitle="Maple Bay" log={openSnackbar} />
@@ -84,6 +87,8 @@ const theme = createTheme({
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/profile" element={<Profile />} />
+
       </Routes>
       <div className="background"></div>
 
