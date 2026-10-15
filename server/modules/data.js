@@ -489,7 +489,8 @@ const getUnreadMessages = async(email) =>{
         {buyer: email},
         {seller: email}
     ]}, {});
-        rooms.array.forEach(element => {
+        if(rooms != null){
+            rooms.array.forEach(element => {
             if(element.buyer == email && element.sellerMessage > element.buyerLogoff){
                 num++;
             }
@@ -497,7 +498,7 @@ const getUnreadMessages = async(email) =>{
                 num++;
             }
         });
-        
+        }        
     }
     catch (e) {
         console.error(e);

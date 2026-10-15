@@ -8,18 +8,29 @@ import {
   MenuItem,
   Button,
   IconButton,
+  Badge,
+
   
 
 } from "@mui/material";
-
+import MailIcon from '@mui/icons-material/Mail';
 import { useNavigate } from "react-router-dom";
-
+import * as api from "../util/api"
 import MenuIcon from "@mui/icons-material/Menu";
 
 const Header = (props) => {
 
  const [anchor, setAnchor] = useState(null);
+ const [numMessages, setNumMessages] = useState(0);
 
+ const getNumMessages = async () => {
+  if(isLoggedIn()){
+    const user = JSON.parse(sessionStorage.getItem("userInfo"));
+    var num = await api.chatroom.getUnreadMessages(user.email);
+    setNumMessages(num);
+  }
+ }
+ window.setInterval(getNumMessages, 1000);//message refresh rate
  const handleMenuClick = (path) => {
     if (!sessionStorage.getItem("userInfo")) {
       alert("Please log in to access this page.");
@@ -82,7 +93,12 @@ const Header = (props) => {
         {!isLoggedIn() &&
           <Button style={{ color: "#fffefe" }} onClick={() => navigate("/signup")} >Signup </Button>
         }
-       
+       {isLoggedIn() &&
+        <IconButton aria-label="show unread messages">
+          <Badge badgeContent={numMessages} color="primary">
+            <MailIcon />
+          </Badge>
+        </IconButton>}
         {isLoggedIn() && (
           <IconButton
             style={{ color: "#fffefe" }}
