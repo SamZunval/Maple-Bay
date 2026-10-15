@@ -19,7 +19,13 @@ import {  retrieveUsers,
     updateProduct,
     retrieveProducts,
     retrieveProduct,
-    retrieveUserProducts} from './data.js';
+    retrieveUserProducts,
+    getUserChatRooms,
+    newChatRoom,
+    updateLeftRoom,
+    updateJoinRoom,
+    updateMessageSent,
+    getUnreadMessages} from './data.js';
 
 import * as colors from "./colors.js";
 import * as data from "./messager.js";
@@ -195,6 +201,27 @@ app.get('/product/:what', async (_request, response) => {
     let images = await retrieveProduct(image_id);
     response.json(images);
 });
+//chat rooms
+app.post('/db/newChatRoom', async (_request, response) => {
+    try {
+        let name = await newChatRoom(_request.body.buyer, _request.body.product);
+        response.json(name);
+    }
+    catch (e) {
+        console.error(e);
+        response.sendStatus(500);
+    }
+});
+app.get('/ChatRoom/:what', async (_request, response) => {
+    const user = _request.params.what;
+    let rooms = await getUserChatRooms(user);
+    response.json(rooms);
+});
+app.get('/unread/:what', async (_request, response) => {
+    const user = _request.params.what;
+    let number = await getUnreadMessages(user);
+    response.json(number);
+});
 /*
 app.get('/bookmark', function (req, res) {//handles routing for the client
   res.sendFile("public/index.html",{ root: '.' });
@@ -219,7 +246,7 @@ io.on("connect", socket  => {
             socket.data = joinInfo;
             socket.data.color = colors.getRandomColor(); // Add the color to socket.data
             socket.join(roomName);
-
+            updateJoinRoom(roomName,userName);
             data.addUser(roomName, socket.data);
             io.to(roomName).emit("room update", data.roomDetails(roomName));
             socket.on("disconnect", () => 
@@ -228,6 +255,7 @@ io.on("connect", socket  => {
                     colors.releaseColor(socket.data.color); // Release the color from socket.data
                     data.addMessage(roomName, { timestamp: Date.now(), sender: '', text: `${userName} has left the room`});
                     data.removeUser(roomName,socket.data);
+                    updateLeftRoom(roomName,userName);
                     io.to(roomName).emit("chat update", data.roomLog(roomName));
                     io.to(roomName).emit("room update", data.roomDetails(roomName));
 
@@ -241,6 +269,7 @@ io.on("connect", socket  => {
                 const messageInfo = { sender: userName, text ,timestamp: Date.now(), color};
                 //console.log(roomName, messageInfo);
                 data.addMessage(roomName, messageInfo);
+                updateMessageSent(roomName,userName);
                 io.to(roomName).emit("chat update", data.roomLog(roomName));
             });
 

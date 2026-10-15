@@ -172,8 +172,8 @@ const products =  {
         let data = await response.json();
         return data[0];
     },
-    getProduct: async (user_id) => {
-        let response = await fetch(serverRoute("product/"+user_id), {
+    getProduct: async (product_id) => {
+        let response = await fetch(serverRoute("product/"+product_id), {
             headers,
             method: 'GET'
         });
@@ -194,11 +194,41 @@ const products =  {
         return data[0];
     },
 }
-
+const chatroom = {
+    newChatRoom: async (buyer,product) => {
+        let response = await fetch(serverRoute("db/newChatRoom"), {
+            headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+            },
+            method: 'POST',
+            json: true, 
+            body: JSON.stringify({buyer,product}),
+        });
+        return response;
+    },
+    getUserChatRooms: async (email) => {
+        let response = await fetch(serverRoute("ChatRoom/"+email), {
+            headers,
+            method: 'GET'
+        });
+        let data = await response.json();
+        return data[0];
+    },
+    getUnreadMessages: async (email) => {
+        let response = await fetch(serverRoute("unread/"+email), {
+            headers,
+            method: 'GET'
+        });
+        let data = await response.json();
+        return data;
+    },
+}
 export {
     users,
     images,
     surveys,
     stats,
-    products
+    products,
+    chatroom
 }
