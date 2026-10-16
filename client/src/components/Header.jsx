@@ -30,7 +30,7 @@ const Header = (props) => {
     setNumMessages(num);
   }
  }
- window.setInterval(getNumMessages, 1000);//message refresh rate
+ window.setInterval(getNumMessages, 30000);//check every 30s
  const handleMenuClick = (path) => {
     if (!sessionStorage.getItem("userInfo")) {
       alert("Please log in to access this page.");
