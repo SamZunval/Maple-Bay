@@ -75,13 +75,18 @@ const users = {
     updateUser: async (user) => {
         let response = await fetch(serverRoute("db/updateuser"), {
             headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
             },
             method: 'POST',
             json: true, 
             body: JSON.stringify(user),
         });
+        console.log("Response status:", response.status);
+        console.log("Response URL:", response.url);
+        console.log("Response body:", await response.clone().text());
+        console.log("Email received by backend:", user.email);
+
         return response;
     },
 }

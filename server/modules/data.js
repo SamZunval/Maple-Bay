@@ -158,6 +158,7 @@ const removeUser = async (user) => {
 const updateUser = async (user) => {
 
     let context = undefined;
+
     try {
         // Initialize the database
         context = await db.initDatabase(env.DB_URI);
