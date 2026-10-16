@@ -63,7 +63,7 @@ const isUserNameTaken = (userName) => {
 }
 
 const isUserNameAvailable = (userName, roomName) => {
-    return !isUserNameTaken(userName) && roomName.includes(userName);
+    return !isUserNameTaken(userName);// && roomName.includes(userName);
 }
 /*Rooms*/
 let roomLogs = {};

@@ -1,7 +1,7 @@
 import env from './env.js';
 import * as db from './db.js'
 import * as fs from "node:fs/promises";
-
+import { ObjectId } from 'mongodb';
 const DATABASE_NAME = "MapleStorage";
 const IMAGE_COLLECTION = "Images";
 const USER_COLLECTION = "Users";
@@ -51,7 +51,7 @@ const retrieveUser = async (user_id) => {
         context = await db.initDatabase(env.DB_URI);
 
         //users = await db.findDocuments(context, DATABASE_NAME, USER_COLLECTION, {first_name: user.first_name, last_name: user.last_name}, {});
-        users = await db.findDocument(context, DATABASE_NAME, USER_COLLECTION, {_id : user_id}, {});
+        users = await db.findDocument(context, DATABASE_NAME, USER_COLLECTION, {_id : new ObjectId(user_id)}, {});
     }
     catch (e) {
         console.error(e);
@@ -198,7 +198,7 @@ const removeImage = async (image) => {
         // Initialize the database
         context = await db.initDatabase(env.DB_URI);
 
-        let result = await db.deleteDocument(context, DATABASE_NAME, IMAGE_COLLECTION, {_id: image});
+        let result = await db.deleteDocument(context, DATABASE_NAME, IMAGE_COLLECTION, {_id: new ObjectId(image)});
         //console.log(`${result.insertedCount} user removed from ${USER_COLLECTION}`);
     }
     catch (e) {
@@ -236,7 +236,7 @@ const retrieveImage = async (data) => {
         context = await db.initDatabase(env.DB_URI);
 
         //users = await db.findDocuments(context, DATABASE_NAME, USER_COLLECTION, {first_name: user.first_name, last_name: user.last_name}, {});
-        image = await db.findDocument(context, DATABASE_NAME, USER_COLLECTION, {_id : data}, {});
+        image = await db.findDocument(context, DATABASE_NAME, USER_COLLECTION, {_id : new ObjectId(data)}, {});
     }
     catch (e) {
         console.error(e);
@@ -354,7 +354,7 @@ const retrieveProduct = async (user_id) => {
         context = await db.initDatabase(env.DB_URI);
 
         //users = await db.findDocuments(context, DATABASE_NAME, USER_COLLECTION, {first_name: user.first_name, last_name: user.last_name}, {});
-        users = await db.findDocument(context, DATABASE_NAME, PRODUCT_COLLECTION, {_id : user_id}, {});
+        users = await db.findDocument(context, DATABASE_NAME, PRODUCT_COLLECTION, {_id : new ObjectId(user_id)}, {});
     }
     catch (e) {
         console.error(e);
@@ -400,10 +400,10 @@ const getUserChatRooms = async(user) =>{
         context = await db.initDatabase(env.DB_URI);
 
         //users = await db.findDocuments(context, DATABASE_NAME, USER_COLLECTION, {first_name: user.first_name, last_name: user.last_name}, {});
-        roomNames = await db.findDocument(context, DATABASE_NAME, CHATGROUP_COLLECTION, {$or: [
-        {buyer: user.email},
-        {seller: user.email}
-    ]}, {_id});
+        roomNames = await db.findDocuments(context, DATABASE_NAME, CHATGROUP_COLLECTION, {$or: [
+        {buyer: user},
+        {seller: user}
+    ]}, {});
         
     }
     catch (e) {
@@ -418,7 +418,10 @@ const getUserChatRooms = async(user) =>{
 const updateLeftRoom = async(room,user) => {
     let context = undefined;
     try {
-    let found = await db.findDocument(context, DATABASE_NAME, CHATGROUP_COLLECTION, {_id: room}, {});
+        // Initialize the database
+        context = await db.initDatabase(env.DB_URI);
+
+    let found = await db.findDocument(context, DATABASE_NAME, CHATGROUP_COLLECTION, {_id: new ObjectId(room)}, {});
     if(found.buyer == user)
     {
         found.buyerLogoff = Date.now();
@@ -427,7 +430,7 @@ const updateLeftRoom = async(room,user) => {
     {
         found.sellerLogoff = Date.now();
     }
-    let result = await db.replaceDocument(context, DATABASE_NAME, CHATGROUP_COLLECTION, {_id: room}, found);
+    let result = await db.replaceDocument(context, DATABASE_NAME, CHATGROUP_COLLECTION, {_id: new ObjectId(room)}, found);
     }
     catch (e) {
         console.error(e);
@@ -439,7 +442,9 @@ const updateLeftRoom = async(room,user) => {
 const updateJoinRoom = async(room,user) => {
     let context = undefined;
     try {
-    let found = await db.findDocument(context, DATABASE_NAME, CHATGROUP_COLLECTION, {_id: room}, {});
+        // Initialize the database
+        context = await db.initDatabase(env.DB_URI);
+        let found = await db.findDocument(context, DATABASE_NAME, CHATGROUP_COLLECTION, {_id: new ObjectId(room)}, {});
     if(found.buyer == user)
     {
         found.buyerLogoff = null;
@@ -448,7 +453,7 @@ const updateJoinRoom = async(room,user) => {
     {
         found.sellerLogoff = null;
     }
-    let result = await db.replaceDocument(context, DATABASE_NAME, CHATGROUP_COLLECTION, {_id: room}, found);
+    let result = await db.replaceDocument(context, DATABASE_NAME, CHATGROUP_COLLECTION, {_id: new ObjectId(room)}, found);
     }
     catch (e) {
         console.error(e);
@@ -460,7 +465,9 @@ const updateJoinRoom = async(room,user) => {
 const updateMessageSent = async(room,user) => {
     let context = undefined;
     try {
-    let found = await db.findDocument(context, DATABASE_NAME, CHATGROUP_COLLECTION, {_id: room}, {});
+        // Initialize the database
+        context = await db.initDatabase(env.DB_URI);
+    let found = await db.findDocument(context, DATABASE_NAME, CHATGROUP_COLLECTION, {_id: new ObjectId(room)}, {});
     if(found.buyer == user)
     {
         found.buyerMessage = Date.now();
@@ -469,7 +476,7 @@ const updateMessageSent = async(room,user) => {
     {
         found.sellerMessage = Date.now();
     }
-    let result = await db.replaceDocument(context, DATABASE_NAME, CHATGROUP_COLLECTION, {_id: room}, found);
+    let result = await db.replaceDocument(context, DATABASE_NAME, CHATGROUP_COLLECTION, {_id: new ObjectId(room)}, found);
     }
     catch (e) {
         console.error(e);
@@ -486,12 +493,12 @@ const getUnreadMessages = async(email) =>{
         context = await db.initDatabase(env.DB_URI);
 
         //users = await db.findDocuments(context, DATABASE_NAME, USER_COLLECTION, {first_name: user.first_name, last_name: user.last_name}, {});
-        let rooms = await db.findDocument(context, DATABASE_NAME, CHATGROUP_COLLECTION, {$or: [
+        let rooms = await db.findDocuments(context, DATABASE_NAME, CHATGROUP_COLLECTION, {$or: [
         {buyer: email},
         {seller: email}
     ]}, {});
         if(rooms != null){
-            rooms.array.forEach(element => {
+            rooms.forEach(element => {
             if(element.buyer == email && element.sellerMessage > element.buyerLogoff){
                 num++;
             }
