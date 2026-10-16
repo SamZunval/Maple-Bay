@@ -16,8 +16,17 @@ import {
   CircularProgress,
   Card,
   CardContent,
+  CardHeader,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Avatar,
+  ToggleButtonGroup,
+  ToggleButton
 
 } from "@mui/material";
+
 import { useNavigate } from 'react-router-dom';
 import { 
     IconButton, 
@@ -27,9 +36,9 @@ import AddIcon from "@mui/icons-material/Add";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import duycky from "../assets/Ducky.png";
-import * as api from "../util/api";
 
 import { products } from "../util/api";
+import { users } from "../util/api";
 
 const valueFor = (product, fields) => {
   const key = Object.keys(product).find((field) =>
@@ -49,7 +58,6 @@ const formatPrice = (price) => {
 };
 
 
-
 const Profile = () => {
 
   {/* Rudy code */}
@@ -61,25 +69,42 @@ const Profile = () => {
 
   {/* User Info States */}
 
-  const [businessName, setBusinessName] = useState("");
-  const [userName, setUserName] = useState("");
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
-  const [city, setCity] = useState("");
-  const [college, setCollege] = useState("");
-  const [image, setImage] = useState(null);
-  const [member, setMember] = useState("");
-  const [userType, setUserType] = useState("");
+  /*SAVED USERS keeps all the orginial values form session storage*/
+  const [savedUser, setSavedUser] = useState(() => {
+    const user = typeof window !== "undefined" ? sessionStorage.getItem("userInfo") : null;
+    return user ? JSON.parse(user) : null;
+  });
+
+  const [businessName, setBusinessName] = useState(savedUser?.businessName || "");
+  const [firstName, setFirstName] = useState(savedUser?.firstName || "");
+  const [province, setProvince] = useState(savedUser?.province || "");
+  const [city, setCity] = useState(savedUser?.city || "");
+  const [lastName, setLastName] = useState(savedUser?.lastName || "");
+  const [email, setEmail] = useState(savedUser?.email || "");
+  const [image, setImage] = useState(savedUser?.profileImage || null);
+  const [userType, setUserType] = useState(savedUser?.userType || "");
 
   {/* Change boxes */}
   const [showProducts, setshowProducts] = useState(true);
   const [showAbout, setshowAbout] = useState(false);
   const [showFeedback, setshowFeedback] = useState(false);
 
+  {/* Edit variables code */}
+  const [openEditProfile, setOpenEditProfile] = useState(false);
+  const [about, setAbout] = useState("");
 
-  const navigate = useNavigate();
+  const [registerData, setRegisterData] = useState({
+    firstName: "",
+    lastName: "",
+    businessName: "",
+    email: "",
+    password: "",
+    province: "",
+    city: "",
+    userType: "personal"
+  });
 
+  const [uType, setuType] = useState("personal");
 
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");        
@@ -88,52 +113,35 @@ const Profile = () => {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   
-  const [savedUser, setSavedUser] = useState(null);
 
   useEffect(() => {
-    const user = sessionStorage.getItem("userInfo");
-    if (user) {
-      const userData = JSON.parse(user);
-      setSavedUser(userData);
-      
-      setBusinessName(userData.businessName || "");
-      setUserName(userData.userName || "");
-      setFirstName(userData.firstName || "");
-      setLastName(userData.lastName || "");
-      setEmail(userData.email || "");
-      setCity(userData.city || "");
-      setCollege(userData.college || "");
-      setMember(userData.member || "");
-      setUserType(userData.userType || "");
-      setImage(userData.profileImage || null);
-    }
-
-       let active = true;
-    
-        const loadProducts = async () => {
-          try {
-            const result = await products.getProducts();
-            if (!Array.isArray(result)) {
-              throw new Error("The product service returned an invalid response.");
-            }
-            if (active) {
-              setProductList(result);
-            }
-          } catch (err) {
-            if (active) {
-              setError(err.message || "Unable to retrieve products.");
-            }
-          } finally {
-            if (active) {
-              setLoading(false);
-            }
+      console.log( savedUser);
+      let active = true;
+  
+      const loadProducts = async () => {
+        try {
+          const result = await products.getProducts();
+          if (!Array.isArray(result)) {
+            throw new Error("The product service returned an invalid response.");
           }
-        };
-    
-        loadProducts();
-        return () => {
-          active = false;
-        };
+          if (active) {
+            setProductList(result);
+          }
+        } catch (err) {
+          if (active) {
+            setError(err.message || "Unable to retrieve products.");
+          }
+        } finally {
+          if (active) {
+            setLoading(false);
+          }
+        }
+      };
+  
+      loadProducts();
+      return () => {
+        active = false;
+      };
 
   }, []);
 
@@ -176,11 +184,6 @@ const Profile = () => {
 
   {/* Update user */}
   const handleSave = async () => {
-    if (!savedUser) {
-      alert("No user session found.");
-      return;
-    }
-
     
     if(newPassword.length > 0 || confirmPassword.length > 0)
     {
@@ -205,24 +208,29 @@ const Profile = () => {
     
     const updatedUser = {
       ...savedUser,
-      userName,
-      firstName,
-      lastName,
-      email,
-      city,
-      college,
-      member,
-      password: newPassword ? newPassword : savedUser.password,
-      profileImage: image,
+      firstName: registerData.firstName !== "" ? registerData.firstName : savedUser.firstName,
+      lastName: registerData.lastName !== "" ? registerData.lastName : savedUser.lastName,
+      city: registerData.city !== "" ? registerData.city : savedUser.city,
+      province: registerData.province !== "" ? registerData.province : savedUser.province,
+      password: registerData.password !== "" ? registerData.password : savedUser.password,
+      profileImage: registerData.profileImage !== "" ? registerData.profileImage : savedUser.profileImage,
+      email: registerData.email !== "" ? registerData.email : savedUser.email,
     };
 
     console.log("[Profile Update] Sending updated data to server:", updatedUser);
+        console.log("[registerData]:", registerData);
+
+        console.log("Email used for update:", updatedUser.email);
+console.log("Original saved email:", savedUser.email);
+console.log("Form email:", registerData.email);
     try {
-      const response = await api.users.updateUser(updatedUser);
+
+      const response = await users.updateUser(updatedUser);
       if (response.ok) {
         
         sessionStorage.setItem("userInfo", JSON.stringify(updatedUser));
         setSavedUser(updatedUser);
+
         setCurrentPassword("");
         setNewPassword("");
         setConfirmPassword("");
@@ -237,7 +245,16 @@ const Profile = () => {
     }
   };
   
+  const handleButtonChange = (event, newType) => {
+      if (newType !== null) {
+              setuType(newType);
+      }        
+      setRegisterData({ ...registerData, ["userType"]: newType });
+  };
 
+  const handleChange = (e) => {
+      setRegisterData({ ...registerData, [e.target.name]: e.target.value });
+  };
 
   {/*rudy code*/}
 
@@ -330,7 +347,7 @@ const Profile = () => {
          <Button
             variant="contained"
             color="primary"
-            onClick={() => {}}
+            onClick={() => {setOpenEditProfile(true);}}
             sx={{ gridColumn: 2, gridRow: 3, justifySelf: "end", mt: 1 }}
             
           >
@@ -584,7 +601,207 @@ const Profile = () => {
         </Typography>
       </Box>
     )}
+
+    
+    {/*------------------------- Edit Profile Modle ------------------------------------------------*/} 
+    <Dialog
+      open={openEditProfile}
+      onClose={() => setOpenEditProfile(false)}
+      fullWidth
+      maxWidth="sm"
+    >
+      <DialogTitle>Edit Profile</DialogTitle>
+
+      <DialogContent>
+        {/* Profile Image */}
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            mb: 3,
+            mt: 1
+          }}
+        >
+          <Avatar
+            src={image}
+            sx={{
+              width: 100,
+              height: 100,
+              mb: 1,
+              bgcolor: "black"
+            }}
+          />
+
+          <Button
+            variant="outlined"
+            component="label"
+            sx={{ color: "black", borderColor: "black" }}
+          >
+            Upload new Profile Photo
+
+            <input
+              type="file"
+              accept="image/*"
+              hidden
+              onChange={handleImageChange}
+            />
+          </Button>
+        </Box>
+
+        {/* About Section */}
+        <TextField
+          label="About"
+          multiline
+          rows={4}
+          fullWidth
+          value={about}
+          onChange={(event) => setAbout(event.target.value)}
+          placeholder="Tell people a little about yourself..."
+        />
+      </DialogContent>
+
+       {/* Personal or Business */}
+      <Box
+        sx={{
+          position: "relative",
+          display: "flex",
+          width: "100%",
+          backgroundColor: "#f0f0f0",
+          borderRadius: "30px",
+          padding: "4px",
+          mb: 2
+        }}
+      >
+        <Box
+          sx={{
+            position: "absolute",
+            top: "4px",
+            bottom: "4px",
+            left: uType === "personal" ? "1%" : "50%",
+            width: "calc(50% - 1%)",
+            backgroundColor: "var(--primary-color)",
+            borderRadius: "30px",
+            transition: "left 0.3s ease"
+          }}
+        />
+
+        <ToggleButtonGroup
+          color="primary"
+          value={uType}
+          exclusive
+          onChange={handleButtonChange}
+          sx={{
+            display: "flex",
+            width: "100%",
+            position: "relative",
+            zIndex: 1,
+            "& .MuiToggleButtonGroup-grouped": {
+              flex: 1,
+              border: "none",
+              borderRadius: "30px !important",
+              padding: "8px 24px"
+            },
+            "& .Mui-selected": {
+              backgroundColor: "var(--primary-color)",
+              color: "var(--text-color) !important"
+            }
+          }}
+        >
+          <ToggleButton value="personal">Personal</ToggleButton>
+          <ToggleButton value="business">Business</ToggleButton>
+        </ToggleButtonGroup>
+      </Box>
+
+      {/* Personal Name Fields */}
+      {uType === "personal" && (
+        <Box sx={{ display: "flex", gap: 2 }}>
+          <TextField
+            fullWidth
+            label="First Name"
+            name="firstName"
+            value={registerData.firstName}
+            onChange={handleChange}
+            sx={{ mb: 2 }}
+          />
+
+          <TextField
+            fullWidth
+            label="Last Name"
+            name="lastName"
+            value={registerData.lastName}
+            onChange={handleChange}
+            sx={{ mb: 2 }}
+          />
+        </Box>
+      )}
+
+      {/* Business Name */}
+      {uType === "business" && (
+        <TextField
+          fullWidth
+          label="Business Name"
+          name="businessName"
+          value={registerData.businessName}
+          onChange={handleChange}
+          sx={{ mb: 2 }}
+        />
+      )}
+
+      {/* Email */}
+      <TextField
+        fullWidth
+        label="Email"
+        name="email"
+        type="email"
+        value={registerData.email}
+        onChange={handleChange}
+        sx={{ mb: 2 }}
+      />
+
+      {/* Location Fields */}
+      <Box sx={{ display: "flex", gap: 2 }}>
+        <TextField
+          fullWidth
+          label="City"
+          name="city"
+          value={registerData.city}
+          onChange={handleChange}
+          sx={{ mb: 2 }}
+        />
+
+        <TextField
+          fullWidth
+          label="Province"
+          name="province"
+          value={registerData.province}
+          onChange={handleChange}
+          sx={{ mb: 2 }}
+        />
+      </Box>
+
+      <DialogActions>
+        <Button
+          onClick={() => setOpenEditProfile(false)}
+          color="inherit"
+        >
+          Cancel
+        </Button>
+
+        <Button
+          variant="contained"
+          onClick={() => {
+            handleSave();
+            setOpenEditProfile(false);
+          }}
+        >
+          Save
+        </Button>
+      </DialogActions>
+
+    </Dialog>
   </Box>
+  
   );
 };
 
