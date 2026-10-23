@@ -30,9 +30,21 @@ const ChatList = (props) => {
     
     return (<>
         <Paper elevation={4} sx={{ marginTop: "0.5em" }}>
-            <CardHeader title="Items for sale" />
+            <CardHeader title="Product Messages" />
         </Paper>
         <>
+            {matches == null && 
+                <Paper elevation={4} sx={{ marginTop: "0.5em" }}>
+                    <CardHeader title={"You have no ongoing conversations"}  />
+                    <CardContent>
+                        <Button fullWidth variant="contained"
+                        onClick={() => window.location.href = '/' }
+                        >
+                        Try Visiting the Shop
+                    </Button>
+                    </CardContent>
+                </Paper>
+            }
             {matches != null && [matches].map(function(object,i){
  	           return <Paper key={i} elevation={4} sx={{ marginTop: "0.5em" }}>
                 <CardHeader title={object.roomName}  />
