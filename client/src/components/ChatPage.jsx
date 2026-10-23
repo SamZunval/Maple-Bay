@@ -21,6 +21,8 @@ function ChatPage() {
         userName: '',
         roomName: '',
         fancyRoomName: '',
+        useName: '',
+        theirName: '',
         error: ''
     });
 
