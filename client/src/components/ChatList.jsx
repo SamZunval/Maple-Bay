@@ -22,10 +22,20 @@ const ChatList = (props) => {
         loadMatches();
     }, []);
 
-    const getRoomName = (name,fancyRoomName) => {
+    const getRoomName = (name,fancyRoomName,object) => {
+        var useName;
+        var theirName;
         var roomName = name;
         let userName = JSON.parse(sessionStorage.getItem("userInfo")).email;
-        return {roomName, userName,fancyRoomName};
+        if(userName == object.seller){
+            useName = object.sellerName;
+            theirName = object.buyerName;
+        }
+        else {
+            useName = object.buyerName;
+            theirName = object.sellerName;
+        }
+        return {roomName, userName,fancyRoomName,useName,theirName};
     }
     
     return (<>
@@ -50,7 +60,7 @@ const ChatList = (props) => {
                 <CardHeader title={object.roomName}  />
                 <CardContent>
                 <Button object={object}fullWidth variant="contained"
-                    onClick={() => props.joinRoom(getRoomName(object._id,object.roomName))}
+                    onClick={() => props.joinRoom(getRoomName(object._id,object.roomName,object))}
                 >
                     Chat
                 </Button>

@@ -119,7 +119,7 @@ const Chat = (props) => {
             <div key={index} ref={lastMessageRef} className={messageClassName}>
                 <div className="message-bubble" style={{ borderColor: message.color }}>
                     <Typography variant="h6" className="message-text" sx={{ color: message.color }}>
-                        <strong>{message.sender}</strong>
+                        <strong>{message.sender == props.userName ? props.useName : props.theirName}</strong>
                     </Typography>
                     <Typography variant="h6" className="message-text">
                         {message.text}
@@ -168,10 +168,7 @@ const Chat = (props) => {
             let text = "";
 
             if (typing.length == 1) {
-                text = `${typing[0]} is typing...`;
-            }
-            else if (typing.length == 2) {
-                text = `${typing[0]} and ${typing[1]} are typing...`;
+                text = `${props.theirName} is typing...`;
             }
             else {
                 text = "Multiple users are typing...";

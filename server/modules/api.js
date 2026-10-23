@@ -246,7 +246,7 @@ io.on("connect", socket  => {
     socket .on("join", joinInfo => {
         console.log(joinInfo);
         // The client has to be sending joinInfo in this format
-        const { roomName, userName} = joinInfo;
+        const { roomName, userName, useName,theirName} = joinInfo;
 
         if (data.isUserNameAvailable(userName, roomName)) {
             socket.data = joinInfo;
@@ -259,7 +259,7 @@ io.on("connect", socket  => {
                 {
                     data.unregisterUser(userName);
                     colors.releaseColor(socket.data.color); // Release the color from socket.data
-                    data.addMessage(roomName, { timestamp: Date.now(), sender: '', text: `${userName} has left the room`});
+                    data.addMessage(roomName, { timestamp: Date.now(), sender: '', text: `${useName} has left the room`});
                     data.removeUser(roomName,socket.data);
                     updateLeftRoom(roomName,userName);
                     io.to(roomName).emit("chat update", data.roomLog(roomName));
@@ -285,13 +285,13 @@ io.on("connect", socket  => {
                 io.to(roomName).emit("typing", data.getTypingUsers(roomName));
             });
 
-            data.addMessage(roomName, { timestamp: Date.now(), sender: '', text: `${userName} has joined the room`});
+            data.addMessage(roomName, { timestamp: Date.now(), sender: '', text: `${useName} has joined the room`});
             io.to(roomName).emit("chat update", data.roomLog(roomName));
 
             socket.emit("typing", data.getTypingUsers(roomName));
         }
         else {
-            joinInfo.error = `The name ${userName} is already taken`;
+            joinInfo.error = `The name ${useName} is already taken`;
         }
         socket.emit("join-response", joinInfo);
         
