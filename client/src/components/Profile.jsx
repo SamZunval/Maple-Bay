@@ -289,6 +289,9 @@ const Profile = () => {
 
   const query = search.trim().toLowerCase();
   const visibleProducts = productList.filter((product) => {
+    if (String(valueFor(product, ["status"]) || "").trim().toLowerCase() !== "active") {
+      return false;
+    }
     const productCategory = valueFor(product, ["category"]);
     if (category !== "all" && productCategory !== category) {
       return false;
