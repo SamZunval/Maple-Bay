@@ -396,7 +396,26 @@ const newChatRoom = async(buyer, product) =>{
         //users = await db.findDocuments(context, DATABASE_NAME, USER_COLLECTION, {first_name: user.first_name, last_name: user.last_name}, {});
         let found = await db.findDocument(context, DATABASE_NAME, CHATGROUP_COLLECTION, {buyer: buyer.email, product: product._id, seller: product.user}, {});
         if(found == null){
-            roomName = await db.insertDocument(context, DATABASE_NAME, CHATGROUP_COLLECTION, {buyer: buyer.email, product: product._id, seller: product.user});
+            let ob = await retrieveProduct(object.product);
+            var buy = await getUserByEmail(buyer.email);
+            var sell = await getUserByEmail(product.user);
+            //include buyer and seller names in db to reduce query number
+            var buyerName;
+            var sellerName;
+            if(buy.userType == "personal"){
+                buyerName = buy.firstName;
+            }
+            else {
+                buyerName = buy.businessName;
+            }
+            if(sell.userType == "personal"){
+                sellerName = sell.firstName;
+            }
+            else {
+                sellerName = sell.businessName;
+            }
+
+            roomName = await db.insertDocument(context, DATABASE_NAME, CHATGROUP_COLLECTION, {buyer: buyer.email,buyerName: buyerName, product: product._id,productName: ob.title, seller: product.user,sellerName: sellerName});
             let found = await db.findDocument(context, DATABASE_NAME, CHATGROUP_COLLECTION, {buyer: buyer.email, product: product._id, seller: product.user}, {});
             roomName = found._id;
         }
@@ -413,21 +432,15 @@ const newChatRoom = async(buyer, product) =>{
 
     return roomName;
 }
-const getFancyRoomname = async (user,object) =>{
-        let ob = await retrieveProduct(object.product);
+const getFancyRoomname = (user,object) =>{
         var otherUser;
         if(user == object.buyer){
-            otherUser = await getUserByEmail(object.seller);
+            otherUser = object.sellerName;
         }
         else {
-            otherUser = await getUserByEmail(object.buyer);
+            otherUser = object.buyerName;
         }
-        if(otherUser.userType == "personal"){
-            return otherUser.firstName + " - " + ob.title;
-        }
-        else {
-            return otherUser.businessName + " - " + ob.title;
-        }
+        return otherUser + " - " + object.productName;
  } 
 
 const getUserChatRooms = async(user) =>{
@@ -443,10 +456,8 @@ const getUserChatRooms = async(user) =>{
         {seller: user}
     ]}, {});
         for (var room of roomNames) {
-            room.roomName = await getFancyRoomname(user,room);
-            console.log(room.roomName);
+            room.roomName = getFancyRoomname(user,room);
         }
-        console.log(roomNames);
     }
     catch (e) {
         console.error(e);
