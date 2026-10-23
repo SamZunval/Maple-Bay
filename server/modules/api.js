@@ -25,7 +25,8 @@ import {  retrieveUsers,
     updateLeftRoom,
     updateJoinRoom,
     updateMessageSent,
-    getUnreadMessages} from './data.js';
+    getUnreadMessages,
+    getUserByEmail} from './data.js';
 
 import * as colors from "./colors.js";
 import * as data from "./messager.js";
@@ -58,6 +59,11 @@ app.get('/users', async (_request, response) => {
 app.get('/users/:what', async (_request, response) => {
     const user_id = _request.params.what;
     let users = await retrieveUser(user_id);
+    response.json(users);
+});
+app.get('/user/:what', async (_request, response) => {
+    const user_id = _request.params.what;
+    let users = await getUserByEmail(user_id);
     response.json(users);
 });
 app.get('/users/login/:username-:password', async (_request, response) => {

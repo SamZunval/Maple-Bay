@@ -94,7 +94,7 @@ const Header = (props) => {
           <Button style={{ color: "#fffefe" }} onClick={() => navigate("/signup")} >Signup </Button>
         }
        {isLoggedIn() &&
-        <IconButton aria-label="show unread messages">
+        <IconButton aria-label="show unread messages" onClick={() => navigate("/chat")}>
           <Badge badgeContent={numMessages} color="primary">
             <MailIcon />
           </Badge>

@@ -18,6 +18,7 @@ import { Navigate } from "react-router-dom";
 import "./App.css";
 import Header from "./components/Header.jsx";
 import { createTheme, ThemeProvider } from "@mui/material";
+import ChatPage from "./components/ChatPage.jsx";
   const ProtectedRoute = ({ children }) => {
       if (!sessionStorage.getItem("userInfo")) {
           alert("Please log in to access this page.");
@@ -88,7 +89,7 @@ const theme = createTheme({
         <Route path="/signup" element={<Signup />} />
         <Route path="/register" element={<Register />} />
         <Route path="/profile" element={<Profile />} />
-
+        <Route path="/chat" element={<ChatPage />} />
       </Routes>
       <div className="background"></div>
 

@@ -237,7 +237,7 @@ const Chat = (props) => {
                 <Button variant="contained" onClick={() => {setMenuOpen(true);renderMenu();}} >
                     <MenuIcon />
                 </Button>
-                <CardHeader title={props.roomName} />
+                <CardHeader title={props.fancyRoomName} />
                 <Button variant="contained" onClick={() => {props.leaveRoom(); window.location.reload();}}>
                     <LogoutIcon />
                 </Button>

@@ -30,6 +30,14 @@ const users = {
         let data = await response.json();
         return data[0];
     },
+    getUserByEmail: async (user_email) => {
+        let response = await fetch(serverRoute("user/"+user_email), {
+            headers,
+            method: 'GET'
+        });
+        let data = await response.json();
+        return data[0];
+    },
     loginUser: async (username, password) => {
         let response = await fetch(serverRoute("users/login/"+username+"-"+password), {
             headers,

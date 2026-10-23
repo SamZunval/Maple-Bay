@@ -63,6 +63,27 @@ const retrieveUser = async (user_id) => {
     return users;
 }
 
+const getUserByEmail = async (user_email) => {
+    let users = [];
+
+    let context = undefined;
+    try {
+        // Initialize the database
+        context = await db.initDatabase(env.DB_URI);
+
+        //users = await db.findDocuments(context, DATABASE_NAME, USER_COLLECTION, {first_name: user.first_name, last_name: user.last_name}, {});
+        users = await db.findDocument(context, DATABASE_NAME, USER_COLLECTION, {email: user_email}, {});
+    }
+    catch (e) {
+        console.error(e);
+    }
+    finally {
+        context?.close();
+    }
+
+    return users;
+}
+
 const blockUser = async (user_id, user2_id) => {
     let users = [];
 
@@ -392,6 +413,23 @@ const newChatRoom = async(buyer, product) =>{
 
     return roomName;
 }
+const getFancyRoomname = async (user,object) =>{
+        let ob = await retrieveProduct(object.product);
+        var otherUser;
+        if(user == object.buyer){
+            otherUser = await getUserByEmail(object.seller);
+        }
+        else {
+            otherUser = await getUserByEmail(object.buyer);
+        }
+        if(otherUser.userType == "personal"){
+            return otherUser.firstName + " - " + ob.title;
+        }
+        else {
+            return otherUser.businessName + " - " + ob.title;
+        }
+ } 
+
 const getUserChatRooms = async(user) =>{
     let roomNames =[];
     let context = undefined;
@@ -404,7 +442,11 @@ const getUserChatRooms = async(user) =>{
         {buyer: user},
         {seller: user}
     ]}, {});
-        
+        for (var room of roomNames) {
+            room.roomName = await getFancyRoomname(user,room);
+            console.log(room.roomName);
+        }
+        console.log(roomNames);
     }
     catch (e) {
         console.error(e);
@@ -499,10 +541,16 @@ const getUnreadMessages = async(email) =>{
     ]}, {});
         if(rooms != null){
             rooms.forEach(element => {
-            if(element.buyer == email && element.sellerMessage > element.buyerLogoff){
+            if(element.buyer == email && Object.hasOwn(element, 'sellerMessage') && !Object.hasOwn(element, 'buyerLogoff')){
                 num++;
             }
-            else if(element.seller == email && element.buyerMessage > element.sellerLogoff){
+            else if(element.buyer == email && element.buyerLogoff != null && element.sellerMessage > element.buyerLogoff){
+                num++;
+            }
+            else if(element.seller == email && Object.hasOwn(element, 'buyerMessage') && !Object.hasOwn(element, 'sellerLogoff')){
+                num++;
+            }
+            else if(element.seller == email && element.sellerLogoff != null && element.buyerMessage > element.sellerLogoff){
                 num++;
             }
         });
@@ -543,5 +591,6 @@ export {
     updateLeftRoom,
     updateJoinRoom,
     updateMessageSent,
-    getUnreadMessages
+    getUnreadMessages,
+    getUserByEmail
 };
