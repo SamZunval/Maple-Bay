@@ -10,7 +10,7 @@ import {
   MenuItem,
   FormControl,
   Select,
-  Chip,
+  Alert,
   Stack,
   CircularProgress,
   Card,
@@ -80,7 +80,7 @@ const Profile = () => {
   const [province, setProvince] = useState(savedUser?.province || "");
   const [city, setCity] = useState(savedUser?.city || "");
   const [lastName, setLastName] = useState(savedUser?.lastName || "");
-  const [email, setEmail] = useState(savedUser?.email || "");
+  const currentUserEmail = savedUser?.email;
   const [image, setImage] = useState(savedUser?.profileImage || null);
   const [userType, setUserType] = useState(savedUser?.userType || "");
 
@@ -233,42 +233,45 @@ const Profile = () => {
         registerData.password !== ""
           ? registerData.password
           : savedUser.password,
-      profileImage:
-        registerData.profileImage !== ""
-          ? registerData.profileImage
-          : savedUser.profileImage,
+      profileImage: image,
       email: registerData.email !== "" ? registerData.email : savedUser.email,
       about: registerData.about !== ""
         ? registerData.about
         : savedUser.about,
     };
 
-    console.log(
-      "[Profile Update] Sending updated data to server:",
-      updatedUser,
-    );
-    console.log("[registerData]:", registerData);
+    //Many logs for testing
+    // console.log(
+    //   "[Profile Update] Sending updated data to server:",
+    //   updatedUser,
+    // );
+    // console.log("[registerData]:", registerData);
 
-    console.log("Email used for update:", updatedUser.email);
-    console.log("Original saved email:", savedUser.email);
-    console.log("Form email:", registerData.email);
+    // console.log("Email used for update:", updatedUser.email);
+    // console.log("Original saved email:", savedUser.email);
+    // console.log("Form email:", registerData.email);
+
     try {
       const response = await users.updateUser(updatedUser);
       if (response.ok) {
         sessionStorage.setItem("userInfo", JSON.stringify(updatedUser));
         setSavedUser(updatedUser);
+        setImage(updatedUser.profileImage);
 
         setCurrentPassword("");
         setNewPassword("");
         setConfirmPassword("");
 
-        alert("Profile updated successfully!");
+        console.log("Profile updated successfully!");
+        window.location.reload();
+
+        
       } else {
-        alert("Failed to update profile on the server.");
+        console.log("Failed to update profile on the server.");
       }
     } catch (error) {
       console.error("Error updating user:", error);
-      alert("An error occurred while saving.");
+      console.log("An error occurred while saving.");
     }
   };
 
@@ -294,11 +297,26 @@ const Profile = () => {
   ].sort((a, b) => a.localeCompare(b));
 
   const query = search.trim().toLowerCase();
+
   const visibleProducts = productList.filter((product) => {
+
+    console.log(product)
+    //Displays product based on current user email
+    const productEmail = String(
+        product.sellerEmail || ""
+    ).trim().toLowerCase();
+
+    if (!currentUserEmail || productEmail !== currentUserEmail) {
+      return false;
+    }
+    
+    //Displays product if it is 'active'
     if (String(valueFor(product, ["status"]) || "").trim().toLowerCase() !== "active") {
       return false;
     }
     const productCategory = valueFor(product, ["category"]);
+
+    //Displays prodcut by "category"
     if (category !== "all" && productCategory !== category) {
       return false;
     }
@@ -312,6 +330,7 @@ const Profile = () => {
     );
   });
 
+  //Begin html
   return (
     <Box
       sx={{
@@ -519,7 +538,7 @@ const Profile = () => {
             variant="h5"
             sx={{ mb: 2, color: "#3d0f3e" }}
           >
-            Listings
+            My Listings
           </Typography>
 
           {loading && (

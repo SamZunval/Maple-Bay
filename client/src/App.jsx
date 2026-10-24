@@ -9,7 +9,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./components/Home.jsx";
 import Login from "./components/Login.jsx"; 
 import Signup from "./components/Signup.jsx";
-import Register from "./components/Register.jsx";
 import Profile from "./components/Profile.jsx";
 import AddProduct from "./components/AddProduct.jsx";
 
@@ -89,7 +88,6 @@ const theme = createTheme({
         <Route path="/" element={<Home log={openSnackbar} />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
-        <Route path="/register" element={<Register />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/chat" element={<ChatPage />} />
         <Route path="/add-product" element={<AddProduct />} />

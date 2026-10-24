@@ -36,7 +36,8 @@ const Register = () => {
         password: "",
         province: "",
         city: "",
-        userType: "personal"
+        userType: "personal",
+
     });
     const [image, setImage] = useState(null);   
 

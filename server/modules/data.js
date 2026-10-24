@@ -287,6 +287,7 @@ const addProduct = async (prod) => {
         //     return false;
         // }
         //console.log(`${result.insertedCount} user loaded into ${USER_COLLECTION}`);
+        
          let result = await db.insertDocument(
             context,
             DATABASE_NAME,
