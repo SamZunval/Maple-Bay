@@ -276,15 +276,25 @@ const addProduct = async (prod) => {
         // Initialize the database
         context = await db.initDatabase(env.DB_URI);
 
-        let found = await db.findDocument(context, DATABASE_NAME, PRODUCT_COLLECTION, {user : prod.user}, {});
-        if(found == null){
-            let result = await db.insertDocument(context, DATABASE_NAME, PRODUCT_COLLECTION, prod);
-            return true;
-        }
-        else {
-            return false;
-        }
+        //Left over if else statement.
+        //You could only add one product per user because of this statement
+        // let found = await db.findDocument(context, DATABASE_NAME, PRODUCT_COLLECTION, {user : prod.user}, {});
+        // if(found == null){
+        //     let result = await db.insertDocument(context, DATABASE_NAME, PRODUCT_COLLECTION, prod);
+        //     return true;
+        // }
+        // else {
+        //     return false;
+        // }
         //console.log(`${result.insertedCount} user loaded into ${USER_COLLECTION}`);
+         let result = await db.insertDocument(
+            context,
+            DATABASE_NAME,
+            PRODUCT_COLLECTION,
+            prod
+        );
+
+        return true;
     }
     catch (e) {
         console.error(e);

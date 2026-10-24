@@ -93,9 +93,14 @@ const Profile = () => {
   const [showTransactions, setShowTransactions] = useState(false);
   const [transactionCategory, setTransactionCategory] = useState("bought");
 
+
+  {/*Add product variables */}
+
+  const navigate = useNavigate();
+
   {
     /* Edit variables code */
-  }
+ }
   const [openEditProfile, setOpenEditProfile] = useState(false);
   const [about, setAbout] = useState("");
 
@@ -108,9 +113,9 @@ const Profile = () => {
     province: "",
     city: "",
     userType: "personal",
+    about: "",
   });
 
-  const [uType, setuType] = useState("personal");
 
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -233,6 +238,9 @@ const Profile = () => {
           ? registerData.profileImage
           : savedUser.profileImage,
       email: registerData.email !== "" ? registerData.email : savedUser.email,
+      about: registerData.about !== ""
+        ? registerData.about
+        : savedUser.about,
     };
 
     console.log(
@@ -265,9 +273,7 @@ const Profile = () => {
   };
 
   const handleButtonChange = (event, newType) => {
-    if (newType !== null) {
-      setuType(newType);
-    }
+
     setRegisterData({ ...registerData, ["userType"]: newType });
   };
 
@@ -661,6 +667,7 @@ const Profile = () => {
           <Button
             variant="contained"
             color="primary"
+            onClick={() => navigate("/add-product")}
             sx={{
               position: "fixed",
               right: 20,
@@ -790,8 +797,7 @@ const Profile = () => {
             About
           </Typography>
           <Typography variant="body1" sx={{ mb: 2 }}>
-            This is the about section. You can add information about your
-            business or personal profile here.
+            {savedUser?.about || "No about information added yet."}
           </Typography>
         </Box>
       )}
@@ -868,69 +874,20 @@ const Profile = () => {
           {/* About Section */}
           <TextField
             label="About"
+            name="about"
             multiline
             rows={4}
             fullWidth
-            value={about}
-            onChange={(event) => setAbout(event.target.value)}
+            value={registerData.about}
+            onChange={handleChange}
             placeholder="Tell people a little about yourself..."
-          />
-        </DialogContent>
+            sx={{ mb: 2 }}
 
-        {/* Personal or Business */}
-        <Box
-          sx={{
-            position: "relative",
-            display: "flex",
-            width: "100%",
-            backgroundColor: "#f0f0f0",
-            borderRadius: "30px",
-            padding: "4px",
-            mb: 2,
-          }}
-        >
-          <Box
-            sx={{
-              position: "absolute",
-              top: "4px",
-              bottom: "4px",
-              left: uType === "personal" ? "1%" : "50%",
-              width: "calc(50% - 1%)",
-              backgroundColor: "var(--primary-color)",
-              borderRadius: "30px",
-              transition: "left 0.3s ease",
-            }}
           />
 
-          <ToggleButtonGroup
-            color="primary"
-            value={uType}
-            exclusive
-            onChange={handleButtonChange}
-            sx={{
-              display: "flex",
-              width: "100%",
-              position: "relative",
-              zIndex: 1,
-              "& .MuiToggleButtonGroup-grouped": {
-                flex: 1,
-                border: "none",
-                borderRadius: "30px !important",
-                padding: "8px 24px",
-              },
-              "& .Mui-selected": {
-                backgroundColor: "var(--primary-color)",
-                color: "var(--text-color) !important",
-              },
-            }}
-          >
-            <ToggleButton value="personal">Personal</ToggleButton>
-            <ToggleButton value="business">Business</ToggleButton>
-          </ToggleButtonGroup>
-        </Box>
-
+          
         {/* Personal Name Fields */}
-        {uType === "personal" && (
+        {userType === "personal" && (
           <Box sx={{ display: "flex", gap: 2 }}>
             <TextField
               fullWidth
@@ -953,7 +910,7 @@ const Profile = () => {
         )}
 
         {/* Business Name */}
-        {uType === "business" && (
+        {userType === "business" && (
           <TextField
             fullWidth
             label="Business Name"
@@ -995,6 +952,8 @@ const Profile = () => {
             sx={{ mb: 2 }}
           />
         </Box>
+        </DialogContent>
+
 
         <DialogActions>
           <Button onClick={() => setOpenEditProfile(false)} color="inherit">
@@ -1012,6 +971,7 @@ const Profile = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
     </Box>
   );
 };

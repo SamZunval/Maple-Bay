@@ -11,6 +11,8 @@ import Login from "./components/Login.jsx";
 import Signup from "./components/Signup.jsx";
 import Register from "./components/Register.jsx";
 import Profile from "./components/Profile.jsx";
+import AddProduct from "./components/AddProduct.jsx";
+
 
 
 
@@ -90,6 +92,8 @@ const theme = createTheme({
         <Route path="/register" element={<Register />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/chat" element={<ChatPage />} />
+        <Route path="/add-product" element={<AddProduct />} />
+
       </Routes>
       <div className="background"></div>
 
