@@ -31,6 +31,7 @@ import AddIcon from "@mui/icons-material/Add";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import duycky from "../assets/Ducky.png";
+import ProductListings from "../components/ProductListing";
 
 import { products } from "../util/api";
 import { users } from "../util/api";
@@ -57,8 +58,6 @@ const Profile = () => {
     /* Rudy code */
   }
   const [productList, setProductList] = useState([]);
-  const [search, setSearch] = useState("");
-  const [category, setCategory] = useState("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -79,10 +78,10 @@ const Profile = () => {
   const [firstName, setFirstName] = useState(savedUser?.firstName || "");
   const [province, setProvince] = useState(savedUser?.province || "");
   const [city, setCity] = useState(savedUser?.city || "");
-  const [lastName, setLastName] = useState(savedUser?.lastName || "");
+  const [lastName] = useState(savedUser?.lastName || "");
   const currentUserEmail = savedUser?.email;
   const [image, setImage] = useState(savedUser?.profileImage || null);
-  const [userType, setUserType] = useState(savedUser?.userType || "");
+  const [userType] = useState(savedUser?.userType || "");
 
   {
     /* Change boxes */
@@ -102,7 +101,6 @@ const Profile = () => {
     /* Edit variables code */
  }
   const [openEditProfile, setOpenEditProfile] = useState(false);
-  const [about, setAbout] = useState("");
 
   const [registerData, setRegisterData] = useState({
     firstName: "",
@@ -284,52 +282,6 @@ const Profile = () => {
     setRegisterData({ ...registerData, [e.target.name]: e.target.value });
   };
 
-  {
-    /*rudy code*/
-  }
-
-  const categories = [
-    ...new Set(
-      productList
-        .map((product) => valueFor(product, ["category"]))
-        .filter((value) => typeof value === "string" && value.trim()),
-    ),
-  ].sort((a, b) => a.localeCompare(b));
-
-  const query = search.trim().toLowerCase();
-
-  const visibleProducts = productList.filter((product) => {
-
-    console.log(product)
-    //Displays product based on current user email
-    const productEmail = String(
-        product.sellerEmail || ""
-    ).trim().toLowerCase();
-
-    if (!currentUserEmail || productEmail !== currentUserEmail) {
-      return false;
-    }
-    
-    //Displays product if it is 'active'
-    if (String(valueFor(product, ["status"]) || "").trim().toLowerCase() !== "active") {
-      return false;
-    }
-    const productCategory = valueFor(product, ["category"]);
-
-    //Displays prodcut by "category"
-    if (category !== "all" && productCategory !== category) {
-      return false;
-    }
-    if (!query) {
-      return true;
-    }
-    return Object.values(product).some(
-      (value) =>
-        (typeof value === "string" || typeof value === "number") &&
-        String(value).toLowerCase().includes(query),
-    );
-  });
-
   //Begin html
   return (
     <Box
@@ -492,218 +444,19 @@ const Profile = () => {
       {/* Divider */}
       <Divider sx={{ width: "95%", my: 3 }} />
 
-      {/* Product Listings */}
+      {/*----------------------- Product Listings ---------------------------*/}
       {showProducts && (
-        <Box
-          sx={{
-            maxWidth: "2000px",
-            width: "95%",
-            mx: "auto",
-            px: { xs: 2, sm: 3 },
-            py: 5,
-          }}
-        >
-          <Stack
-            direction={{ xs: "column", sm: "row" }}
-            spacing={2}
-            sx={{ mb: 4 }}
-          >
-            <TextField
-              fullWidth
-              label="Search listings"
-              placeholder="Laptop, phone, tablet, etc."
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-            />
-            <FormControl sx={{ minWidth: { xs: "100%", sm: 220 } }}>
-              <InputLabel id="listing-category-label">Category</InputLabel>
-              <Select
-                labelId="listing-category-label"
-                label="Category"
-                value={category}
-                onChange={(event) => setCategory(event.target.value)}
-              >
-                <MenuItem value="all">All categories</MenuItem>
-                {categories.map((item) => (
-                  <MenuItem key={item} value={item}>
-                    {item}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Stack>
-
-          <Typography
-            component="h2"
-            variant="h5"
-            sx={{ mb: 2, color: "#3d0f3e" }}
-          >
-            My Listings
-          </Typography>
-
-          {loading && (
-            <Stack alignItems="center" spacing={2} sx={{ py: 6 }}>
-              <CircularProgress />
-              <Typography color="text.secondary">Loading listings…</Typography>
-            </Stack>
-          )}
-
-          {!loading && error && (
-            <Alert severity="error">Query failed: {error}</Alert>
-          )}
-
-          {!loading && !error && productList.length === 0 && (
-            <Alert severity="info">No listings yet</Alert>
-          )}
-
-          {!loading &&
-            !error &&
-            productList.length > 0 &&
-            visibleProducts.length === 0 && (
-              <Alert severity="info">No listings match your search.</Alert>
-            )}
-
-          {!loading && !error && visibleProducts.length > 0 && (
-            <Box
-              sx={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))",
-                gap: 3,
-              }}
-            >
-              {visibleProducts.map((product, index) => {
-                const title =
-                  valueFor(product, [
-                    "title",
-                    "name",
-                    "productname",
-                    "product_name",
-                  ]) || `Tech item ${index + 1}`;
-                const image = valueFor(product, [
-                  "imageurl",
-                  "image_url",
-                  "image",
-                  "photo",
-                ]);
-                const price = valueFor(product, ["price"]);
-                const description = valueFor(product, [
-                  "description",
-                  "details",
-                ]);
-                const seller =
-                  valueFor(product, ["sellername", "businessname", "seller"]) ||
-                  valueFor(product, ["user"]);
-                const location = valueFor(product, ["location", "city"]);
-                const categoryName = valueFor(product, ["category"]);
-                const condition = valueFor(product, ["condition"]);
-                const listingType = valueFor(product, [
-                  "listingtype",
-                  "sellertype",
-                ]);
-                const id = valueFor(product, ["_id", "id"]);
-
-                return (
-                  <Card
-                    key={id || `${title}-${index}`}
-                    sx={{ overflow: "hidden" }}
-                  >
-                    {typeof image === "string" && image && (
-                      <Box
-                        component="img"
-                        src={image}
-                        alt={title}
-                        loading="lazy"
-                        sx={{
-                          display: "block",
-                          width: "100%",
-                          height: 200,
-                          objectFit: "cover",
-                          bgcolor: "grey.100",
-                        }}
-                      />
-                    )}
-                    <CardContent>
-                      <Stack
-                        direction="row"
-                        justifyContent="space-between"
-                        alignItems="flex-start"
-                        spacing={1}
-                      >
-                        <Typography
-                          component="h3"
-                          variant="h6"
-                          sx={{ color: "#3d0f3e", lineHeight: 1.3 }}
-                        >
-                          {title}
-                        </Typography>
-                        {price !== undefined && (
-                          <Typography
-                            sx={{ fontWeight: 700, whiteSpace: "nowrap" }}
-                          >
-                            {formatPrice(price)}
-                          </Typography>
-                        )}
-                      </Stack>
-
-                      {(categoryName || condition || listingType) && (
-                        <Typography
-                          variant="body2"
-                          color="text.secondary"
-                          sx={{ mt: 1 }}
-                        >
-                          {[categoryName, condition, listingType]
-                            .filter(Boolean)
-                            .join(" · ")}
-                        </Typography>
-                      )}
-                      {description && (
-                        <Typography
-                          color="text.secondary"
-                          sx={{
-                            mt: 1.5,
-                            display: "-webkit-box",
-                            WebkitBoxOrient: "vertical",
-                            WebkitLineClamp: 3,
-                            overflow: "hidden",
-                          }}
-                        >
-                          {description}
-                        </Typography>
-                      )}
-                      {(seller || location) && (
-                        <Typography variant="body2" sx={{ mt: 2 }}>
-                          {[seller, location].filter(Boolean).join(" · ")}
-                        </Typography>
-                      )}
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </Box>
-          )}
-          {/* Add product button */}
-
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => navigate("/add-product")}
-            sx={{
-              position: "fixed",
-              right: 20,
-              bottom: "2%",
-              zIndex: 1000,
-              width: 50,
-              height: 50,
-              minWidth: 50,
-              borderRadius: "50%",
-              padding: 0,
-            }}
-          >
-            <AddIcon sx={{ fontSize: 50 }} />
-          </Button>
-        </Box>
+        <ProductListings
+          productList={productList}
+          currentUserEmail={currentUserEmail}
+          loading={loading}
+          error={error}
+          filterByUser={true}
+          showAddButton={true}
+        />
       )}
 
+      {/*Transaction history */}
       {showTransactions && (
         <Box
           sx={{

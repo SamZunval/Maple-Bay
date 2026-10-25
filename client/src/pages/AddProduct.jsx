@@ -9,6 +9,11 @@ import {
     Button,
     Avatar,
     MenuItem,
+    FormControl,
+    FormLabel,
+    RadioGroup,
+    FormControlLabel,
+    Radio,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import * as api from "../util/api"
@@ -50,6 +55,8 @@ const AddProduct = () => {
         "Well-worn"
     ];
 
+    const [listingType, setListingType] = useState("peer-to-peer");
+
     const handleProductChange = (event) => {
         const { name, value } = event.target;
 
@@ -81,14 +88,15 @@ const AddProduct = () => {
     };
 
     const handleSubmit = async () => {
-        try {
-            
+        try {         
             const newProduct = {
                 ...product,
                 user: userInfo.userType === 'personal'
                         ? `${userInfo.firstName} ${userInfo.lastName}`
                         : userInfo.businessName,
                 sellerEmail: userInfo.email,
+                listingType: listingType,
+
             };
             console.log("Submitting product:", newProduct);
 
@@ -209,6 +217,29 @@ const AddProduct = () => {
                             </MenuItem>
                         ))}
                     </TextField>
+
+                    <FormControl>
+                        <FormLabel id="listing-type-label">Listing Type</FormLabel>
+
+                        <RadioGroup
+                            name="listingType"
+                            aria-labelledby="listing-type-label"
+                            value={listingType}
+                            onChange={(event) => setListingType(event.target.value)}
+                        >
+                            <FormControlLabel
+                            value="peer-to-peer"
+                            control={<Radio />}
+                            label="Pickup at user"
+                            />
+
+                            <FormControlLabel
+                            value="business"
+                            control={<Radio />}
+                            label="Shipping to address"
+                            />
+                        </RadioGroup>
+                    </FormControl>
 
                     <TextField
                         fullWidth

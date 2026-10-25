@@ -6,20 +6,24 @@ import {
 
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
-import Home from "./components/Home.jsx";
+import Home from "./pages/Home.jsx";
 import Login from "./components/Login.jsx"; 
-import Signup from "./components/Signup.jsx";
-import Profile from "./components/Profile.jsx";
-import AddProduct from "./components/AddProduct.jsx";
+import Signup from "./pages/Signup.jsx";
+import Profile from "./pages/Profile.jsx";
+import AddProduct from "./pages/AddProduct.jsx";
+import Header from "./components/Header.jsx";
+import ChatPage from "./pages/ChatPage.jsx";
+import Purchase from "./pages/Purchase.jsx";
 
 
 
 
 import { Navigate } from "react-router-dom";
 import "./App.css";
-import Header from "./components/Header.jsx";
+
+
 import { createTheme, ThemeProvider } from "@mui/material";
-import ChatPage from "./components/ChatPage.jsx";
+
   const ProtectedRoute = ({ children }) => {
       if (!sessionStorage.getItem("userInfo")) {
           alert("Please log in to access this page.");
@@ -85,12 +89,15 @@ const theme = createTheme({
       <Header appTitle="Maple Bay" log={openSnackbar} />
     
       <Routes>
+        <Route path="*" element={<Navigate to="/" replace />} />
         <Route path="/" element={<Home log={openSnackbar} />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/chat" element={<ChatPage />} />
-        <Route path="/add-product" element={<AddProduct />} />
+        <Route path="/profile" element={<ProtectedRoute> <Profile /> </ProtectedRoute>} />
+        <Route path="/purchase" element={<ProtectedRoute> <Purchase /> </ProtectedRoute>} />
+
+        <Route path="/chat" element={<ProtectedRoute> <ChatPage /> </ProtectedRoute> } />
+        <Route path="/add-product" element={<ProtectedRoute><AddProduct /></ProtectedRoute>} />
 
       </Routes>
       <div className="background"></div>
