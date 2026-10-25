@@ -17,9 +17,11 @@ import SendIcon from '@mui/icons-material/Send';
 import LogoutIcon from '@mui/icons-material/Logout';
 import MenuIcon from '@mui/icons-material/Menu';
 import * as fns from "date-fns";
+import * as api from "../util/api"
 const Chat = (props) => {
     /* Menu */
      const [menuOpen, setMenuOpen] = useState(false);
+     const [allowComplete, setAllowComplete] = useState(false);
 
     const renderMenu = () => {
         const users = props.roomLog ?? [];
@@ -27,14 +29,14 @@ const Chat = (props) => {
         if(users == []){
             return (<Paper elevation={4} sx={{mt: "0.5em", display: "flex", flexDirection: "column" }}>
               
-            <CardHeader title={props.roomName} textAlign="center"/>
+            <CardHeader title={props.fancyRoomName} textAlign="center"/>
             <CardHeader title={0  + ' current user(s)'} textAlign="center"/>
             <Divider />
         </Paper>);
         }
         return (<Paper elevation={4} sx={{ mt: "0.5em", display: "flex", flexDirection: "column" }}>
                    
-            <CardHeader title={props.roomName} align="center"/>
+            <CardHeader title={props.fancyRoomName} align="center"/>
             <Typography variant="h7" align="center" sx={{mx:"2em"}}>
                         {users.length + ' current user(s)'}
             </Typography>
@@ -43,9 +45,21 @@ const Chat = (props) => {
                 <List sx={{ height: "60vh", textAlign: "left" }}>
                     {users.map(renderUser)}
                 </List>
+                {allowComplete &&
+                    <Button onClick={() => {markAsCompelete()}} >Mark Transaction as Complete</Button>
+                }
             </CardContent>
         </Paper>);
     };
+    const markAsCompelete = async () => {
+        var product = await api.products.getProduct(props.product);
+        if(product.status == "active"){
+            product.status = "sold";
+            product.buyerEmail = props.buyer;
+            await api.products.updateProduct(product);
+        }
+        setAllowComplete(false);
+    }
     const lastUserRef = useRef(null);
     const renderUser = (message, index) => {
         return (
@@ -182,6 +196,16 @@ const Chat = (props) => {
     }
 
     useEffect(() => {
+        const checkAllowComplete =async () =>{
+            if(props.seller){
+                var product = await api.products.getProduct(props.product);
+                setAllowComplete(props.seller && product.status == "active");
+            }
+            else{
+                setAllowComplete(props.seller);
+            }
+        }
+        checkAllowComplete();
         lastMessageRef.current?.scrollIntoView({ behavior: "smooth" })
     }, [props.chatLog, props.typingUsers]);
 

@@ -28,7 +28,7 @@ const users = {
             method: 'GET'
         });
         let data = await response.json();
-        return data[0];
+        return data;
     },
     getUserByEmail: async (user_email) => {
         let response = await fetch(serverRoute("user/"+user_email), {
@@ -36,7 +36,7 @@ const users = {
             method: 'GET'
         });
         let data = await response.json();
-        return data[0];
+        return data;
     },
     loginUser: async (username, password) => {
         let response = await fetch(serverRoute("users/login/"+username+"-"+password), {
@@ -125,7 +125,7 @@ const images = {
             body: JSON.stringify(image_id),
         });
         let data = await response.json();
-        return data[0];
+        return data;
     },
     getImages: async (user_id) => {
         let response = await fetch(serverRoute("images/" + user_id), {
@@ -183,7 +183,7 @@ const products =  {
             method: 'GET'
         });
         let data = await response.json();
-        return data[0];
+        return data;
     },
     getProduct: async (product_id) => {
         let response = await fetch(serverRoute("product/"+product_id), {
@@ -191,7 +191,7 @@ const products =  {
             method: 'GET'
         });
         let data = await response.json();
-        return data[0];
+        return data;
     },
     removeProduct: async (product_id) => {
         let response = await fetch(serverRoute("db/removeproduct/"+product_id), {
@@ -204,7 +204,7 @@ const products =  {
             body: JSON.stringify(product_id),
         });
         let data = await response.json();
-        return data[0];
+        return data;
     },
 }
 const chatroom = {
@@ -226,7 +226,7 @@ const chatroom = {
             method: 'GET'
         });
         let data = await response.json();
-        return data[0];
+        return data;
     },
     getUnreadMessages: async (email) => {
         let response = await fetch(serverRoute("unread/"+email), {

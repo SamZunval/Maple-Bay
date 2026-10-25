@@ -26,16 +26,20 @@ const ChatList = (props) => {
         var useName;
         var theirName;
         var roomName = name;
+        var seller = false;
+        var product = object.product;
+        var buyer = object.buyer;
         let userName = JSON.parse(sessionStorage.getItem("userInfo")).email;
         if(userName == object.seller){
             useName = object.sellerName;
             theirName = object.buyerName;
+            seller = true;
         }
         else {
             useName = object.buyerName;
             theirName = object.sellerName;
         }
-        return {roomName, userName,fancyRoomName,useName,theirName};
+        return {roomName, userName,fancyRoomName,useName,theirName,seller,product,buyer};
     }
     
     return (<>
@@ -55,7 +59,7 @@ const ChatList = (props) => {
                     </CardContent>
                 </Paper>
             }
-            {matches != null && [matches].map(function(object,i){
+            {matches != null && matches.map(function(object,i){
  	           return <Paper key={i} elevation={4} sx={{ marginTop: "0.5em" }}>
                 <CardHeader title={object.roomName}  />
                 <CardContent>
