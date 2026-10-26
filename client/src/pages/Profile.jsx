@@ -515,7 +515,18 @@ const Profile = () => {
                 }}
               >
                 {history.map((product) => (
-                  <Card key={valueFor(product, ["_id", "id"])}>
+                  <Card
+                    key={valueFor(product, ["_id", "id"])}
+                    onClick={() => navigate("/purchase", { state: { product } })}
+                    sx={{
+                      cursor: "pointer",
+                      transition: "transform 0.2s, box-shadow 0.2s",
+                      "&:hover": {
+                        transform: "translateY(-4px)",
+                        boxShadow: 6,
+                      },
+                    }}
+                  >
                     {valueFor(product, ["imageurl", "image_url"]) && (
                       <Box
                         component="img"

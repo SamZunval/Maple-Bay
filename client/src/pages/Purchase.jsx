@@ -74,13 +74,15 @@ const Purchase = () => {
             Description: {product.description || product.details}
         </Typography>
 
-        <Button
-            variant="contained"
-            onClick={handlePurchase}
-            disabled={purchasing}
+        {String(product.status || "").toLowerCase() !== "sold" && (
+            <Button
+                variant="contained"
+                onClick={handlePurchase}
+                disabled={purchasing}
             >
-            {purchasing ? "Processing..." : "Purchase Item"}
-        </Button>
+                {purchasing ? "Processing..." : "Purchase Item"}
+            </Button>
+        )}
     </Box>
     );
 };
