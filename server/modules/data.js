@@ -407,7 +407,7 @@ const newChatRoom = async(buyer, product) =>{
         //users = await db.findDocuments(context, DATABASE_NAME, USER_COLLECTION, {first_name: user.first_name, last_name: user.last_name}, {});
         let found = await db.findDocument(context, DATABASE_NAME, CHATGROUP_COLLECTION, {buyer: buyer.email, product: product._id, seller: product.user}, {});
         if(found == null){
-            let ob = await retrieveProduct(object.product);
+            let ob = await retrieveProduct(product._id);
             var buy = await getUserByEmail(buyer.email);
             var sell = await getUserByEmail(product.user);
             //include buyer and seller names in db to reduce query number

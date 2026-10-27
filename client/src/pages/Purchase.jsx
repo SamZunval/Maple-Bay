@@ -2,7 +2,7 @@ import { useLocation, Navigate, useNavigate} from "react-router-dom";
 import { Box, Typography } from "@mui/material";
 import { useState } from "react";
 import { Button } from "@mui/material";
-import { products } from "../util/api";
+import { products,chatroom } from "../util/api";
 
 const Purchase = () => {
     const location = useLocation();
@@ -59,7 +59,14 @@ const Purchase = () => {
             setPurchasing(false);
         }
     };
-
+    const handleChat = async() => {
+        if (!userInfo?.email) {
+            setError("Please log in to purchase this item.");
+            return;
+        }
+        await chatroom.newChatRoom(userInfo,product);
+        navigate("/chat")
+    }
     return (
     <Box sx={{ p: 4 }}>
         <Typography variant="h4">
@@ -75,6 +82,13 @@ const Purchase = () => {
         </Typography>
 
         {String(product.status || "").toLowerCase() !== "sold" && (
+            <div>
+            <Button
+                variant="contained"
+                onClick={handleChat}
+            >
+                {"Talk to Seller"}
+            </Button>
             <Button
                 variant="contained"
                 onClick={handlePurchase}
@@ -82,6 +96,7 @@ const Purchase = () => {
             >
                 {purchasing ? "Processing..." : "Purchase Item"}
             </Button>
+            </div>
         )}
     </Box>
     );
