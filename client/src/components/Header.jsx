@@ -30,7 +30,9 @@ const Header = (props) => {
     setNumMessages(num);
   }
  }
- window.setInterval(getNumMessages, 30000);//check every 30s
+
+ window.setInterval(getNumMessages, 300000);//check every 30s
+ 
  const handleMenuClick = (path) => {
     if (!sessionStorage.getItem("userInfo")) {
       alert("Please log in to access this page.");
@@ -114,35 +116,7 @@ const Header = (props) => {
          >
           <MenuItem 
           onClick={() => handleMenuClick("/Profile")}>Profile</MenuItem>
-          <MenuItem
-            disabled={!paidOnly()}
-            onClick={() => handleMenuClick("/swipe", true)}
-          >
-            Swipe {!paidOnly() && "🔒"}
-          </MenuItem>
-          <MenuItem
-            disabled={!paidOnly()}
-            onClick={() => handleMenuClick("/Date", true)}
-          >
-            Date {!paidOnly() && "🔒"}
-          </MenuItem>          
-          <MenuItem
-            onClick={() => handleMenuClick("/DisplayUser", true)}
-          >
-            UserProfile 
-          </MenuItem>
-          <MenuItem
-            disabled={!paidOnly()}
-            onClick={() => handleMenuClick("/Search", true)}
-          >
-            Search {!paidOnly() && "🔒"}
-          </MenuItem>         
-          <MenuItem
-            disabled={!paidOnly()}
-            onClick={() => handleMenuClick("/Loves", true)}
-          >
-            Love {!paidOnly() && "🔒"}
-          </MenuItem>            
+          
           <MenuItem onClick={() => handleMenuClick("/Payment")}>Payment</MenuItem>
 
           {adminOnly() &&
