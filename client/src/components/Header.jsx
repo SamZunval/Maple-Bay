@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 import {
   AppBar,
@@ -30,7 +30,13 @@ const Header = (props) => {
     setNumMessages(num);
   }
  }
- window.setInterval(getNumMessages, 30000);//check every 30s
+
+ useEffect(() => {
+        const interval = setInterval(getNumMessages, 30000);
+
+        return () => clearInterval(interval); 
+    }, []); 
+
  const handleMenuClick = (path) => {
     if (!sessionStorage.getItem("userInfo")) {
       alert("Please log in to access this page.");
