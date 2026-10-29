@@ -17,12 +17,22 @@ import SendIcon from '@mui/icons-material/Send';
 import LogoutIcon from '@mui/icons-material/Logout';
 import MenuIcon from '@mui/icons-material/Menu';
 import * as fns from "date-fns";
-import * as api from "../util/api"
+import * as api from "../util/api";
+import ReviewPage from "./ReviewPage";
 const Chat = (props) => {
     /* Menu */
      const [menuOpen, setMenuOpen] = useState(false);
      const [allowComplete, setAllowComplete] = useState(false);
 
+     //review menu
+     const [open, setOpen] = useState(false);
+    const handleClickOpen = () => {
+        setOpen(true);
+    };
+
+    const handleClose = () => {
+        setOpen(false);
+    };
     const renderMenu = () => {
         const users = props.roomLog ?? [];
 
@@ -47,6 +57,18 @@ const Chat = (props) => {
                 </List>
                 {allowComplete &&
                     <Button onClick={() => {markAsCompelete()}} >Mark Transaction as Complete</Button>
+                }
+                {
+                <div>
+                    <Button onClick={handleClickOpen} >Leave a Review</Button>
+                    <ReviewPage
+                        open={open}
+                        onClose={handleClose}
+                        reviewer={props.userName}
+                        reviewee={props.theirEmail}
+                        product={props.product}
+                    />
+                </div>
                 }
             </CardContent>
         </Paper>);
@@ -109,9 +131,10 @@ const Chat = (props) => {
 
         /* Messages */
         /* Meta Chat Messages */
-
+        
         if (message.sender == '') {
-            return (
+            return; //the joined and left messages are kinda annoying imo
+            /*return (
                 <div key={index} ref={lastMessageRef} style={{ marginTop: "1em", marginBottom: "1em" }}>
                     <Typography variant="h6" textAlign="center">
                         <i>{message.text}</i>
@@ -120,7 +143,7 @@ const Chat = (props) => {
                         <i>{messageTimestamp}</i>
                     </Typography>
                 </div>
-            );
+            );*/
         }
 
        /* User Messages */

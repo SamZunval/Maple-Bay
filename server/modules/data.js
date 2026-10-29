@@ -7,6 +7,7 @@ const IMAGE_COLLECTION = "Images";
 const USER_COLLECTION = "Users";
 const PRODUCT_COLLECTION = "Products";
 const CHATGROUP_COLLECTION = "ChatGroups";
+const REVIEW_COLLECTION = "Reviews";
 import crypto from 'node:crypto';
 function hashPassword(password, salt) {
     return new Promise((resolve, reject) => {
@@ -587,6 +588,68 @@ const getUnreadMessages = async(email) =>{
 
     return num;
 }
+const addReview = async (review) => {
+
+    let context = undefined;
+    try {
+        // Initialize the database
+        context = await db.initDatabase(env.DB_URI);
+
+        let found = await db.findDocument(context, DATABASE_NAME, REVIEW_COLLECTION, {reviewer: review.reviewer, reviewee: review.reviewee,product: review.product}, {});
+        if(found == null){
+            //never reviewed this product before
+            let result = await db.insertDocument(context, DATABASE_NAME, REVIEW_COLLECTION, review);
+        }
+        else {
+            //update review
+            review._id = found._id;
+            await updateReview(review);
+        }
+        return true;
+    }
+    catch (e) {
+        console.error(e);
+        return false;
+    }
+    finally {
+        context?.close();
+    }
+}
+const updateReview = async (review) => {
+
+    let context = undefined;
+    try {
+        // Initialize the database
+        review._id = new ObjectId(review._id);
+        context = await db.initDatabase(env.DB_URI);
+        let result = await db.replaceDocument(context, DATABASE_NAME, REVIEW_COLLECTION, {_id : review._id}, review);
+    }
+    catch (e) {
+        console.error(e);
+    }
+    finally {
+        context?.close();
+    }
+}
+const retrieveUserReviews = async (email) => {
+    let reviews = [];
+
+    let context = undefined;
+    try {
+        // Initialize the database
+        context = await db.initDatabase(env.DB_URI);
+
+        reviews = await db.findDocuments(context, DATABASE_NAME, REVIEW_COLLECTION, {reviewee: email}, {});
+    }
+    catch (e) {
+        console.error(e);
+    }
+    finally {
+        context?.close();
+    }
+
+    return reviews;
+}
 export {
     DATABASE_NAME,
     IMAGE_COLLECTION,
@@ -614,5 +677,8 @@ export {
     updateJoinRoom,
     updateMessageSent,
     getUnreadMessages,
-    getUserByEmail
+    getUserByEmail,
+    addReview,
+    updateReview,
+    retrieveUserReviews
 };

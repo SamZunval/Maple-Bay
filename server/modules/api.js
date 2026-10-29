@@ -26,7 +26,9 @@ import {  retrieveUsers,
     updateJoinRoom,
     updateMessageSent,
     getUnreadMessages,
-    getUserByEmail} from './data.js';
+    getUserByEmail,
+    addReview,
+    retrieveUserReviews} from './data.js';
 
 import * as colors from "./colors.js";
 import * as data from "./messager.js";
@@ -227,6 +229,27 @@ app.get('/unread/:what', async (_request, response) => {
     const user = _request.params.what;
     let number = await getUnreadMessages(user);
     response.json(number);
+});
+//reviews
+app.post('/db/addReview', async (_request, response) => {
+    try {
+        let good = await addReview(_request.body);
+        if(good){
+            response.sendStatus(200);
+        }
+        else {
+            response.sendStatus(400);
+        }
+    }
+    catch (e) {
+        console.error(e);
+        response.sendStatus(500);
+    }
+});
+app.get('/reviews/:what', async (_request, response) => {
+    const email = _request.params.what;
+    let reviews = await retrieveUserReviews(email);
+    response.json(reviews);
 });
 /*
 app.get('/bookmark', function (req, res) {//handles routing for the client

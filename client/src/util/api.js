@@ -237,11 +237,34 @@ const chatroom = {
         return data;
     },
 }
+const review = {
+    getUserReviews: async (email) => {
+        let response = await fetch(serverRoute("reviews/"+email), {
+            headers,
+            method: 'GET'
+        });
+        let data = await response.json();
+        return data;
+    },
+    addReview: async (review) => {
+        let response = await fetch(serverRoute("db/addReview"), {
+            headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+            },
+            method: 'POST',
+            json: true, 
+            body: JSON.stringify(review),
+        });
+        return response;
+    },
+}
 export {
     users,
     images,
     surveys,
     stats,
     products,
-    chatroom
+    chatroom,
+    review
 }

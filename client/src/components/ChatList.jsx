@@ -29,17 +29,20 @@ const ChatList = (props) => {
         var seller = false;
         var product = object.product;
         var buyer = object.buyer;
+        var theirEmail;
         let userName = JSON.parse(sessionStorage.getItem("userInfo")).email;
         if(userName == object.seller){
             useName = object.sellerName;
             theirName = object.buyerName;
+            theirEmail = object.buyer;
             seller = true;
         }
         else {
             useName = object.buyerName;
             theirName = object.sellerName;
+            theirEmail = object.seller;
         }
-        return {roomName, userName,fancyRoomName,useName,theirName,seller,product,buyer};
+        return {roomName, userName,fancyRoomName,useName,theirName,seller,product,buyer,theirEmail};
     }
     
     return (<>
