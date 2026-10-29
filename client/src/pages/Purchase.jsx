@@ -67,6 +67,12 @@ const Purchase = () => {
         await chatroom.newChatRoom(userInfo,product);
         navigate("/chat")
     }
+
+    const handleProfile = async() =>{
+
+        console.log("Show profile ")
+    }
+
     return (
     <Box sx={{ p: 4 }}>
         <Typography variant="h4">
@@ -95,6 +101,12 @@ const Purchase = () => {
                 disabled={purchasing}
             >
                 {purchasing ? "Processing..." : "Purchase Item"}
+            </Button>
+             <Button
+                variant="contained"
+                onClick={handleProfile}
+            >
+                {"View Profiel"}
             </Button>
             </div>
         )}

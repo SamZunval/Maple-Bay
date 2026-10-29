@@ -120,35 +120,7 @@ const Header = (props) => {
          >
           <MenuItem 
           onClick={() => handleMenuClick("/Profile")}>Profile</MenuItem>
-          <MenuItem
-            disabled={!paidOnly()}
-            onClick={() => handleMenuClick("/swipe", true)}
-          >
-            Swipe {!paidOnly() && "🔒"}
-          </MenuItem>
-          <MenuItem
-            disabled={!paidOnly()}
-            onClick={() => handleMenuClick("/Date", true)}
-          >
-            Date {!paidOnly() && "🔒"}
-          </MenuItem>          
-          <MenuItem
-            onClick={() => handleMenuClick("/DisplayUser", true)}
-          >
-            UserProfile 
-          </MenuItem>
-          <MenuItem
-            disabled={!paidOnly()}
-            onClick={() => handleMenuClick("/Search", true)}
-          >
-            Search {!paidOnly() && "🔒"}
-          </MenuItem>         
-          <MenuItem
-            disabled={!paidOnly()}
-            onClick={() => handleMenuClick("/Loves", true)}
-          >
-            Love {!paidOnly() && "🔒"}
-          </MenuItem>            
+          
           <MenuItem onClick={() => handleMenuClick("/Payment")}>Payment</MenuItem>
 
           {adminOnly() &&
