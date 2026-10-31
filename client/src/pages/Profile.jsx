@@ -152,6 +152,20 @@ const Profile = () => {
     };
   }, []);
 
+  const userEmail = String(currentUserEmail || "").trim().toLowerCase();
+  const transactionHistory = productList.filter((product) => {
+    const email =
+      transactionCategory === "bought"
+        ? valueFor(product, ["buyeremail"])
+        : valueFor(product, ["selleremail"]) || valueFor(product, ["user"]);
+
+    return (
+      String(valueFor(product, ["status"]) || "").toLowerCase() === "sold" &&
+      userEmail !== "" &&
+      String(email || "").trim().toLowerCase() === userEmail
+    );
+  });
+
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -483,81 +497,65 @@ const Profile = () => {
             <ToggleButton value="bought">Bought</ToggleButton>
             <ToggleButton value="sold">Sold</ToggleButton>
           </ToggleButtonGroup>
-          {(() => {
-            const currentEmail = savedUser?.email?.toLowerCase();
-            const history = productList.filter((product) => {
-              if (
-                String(valueFor(product, ["status"])).toLowerCase() !== "sold"
-              ) {
-                return false;
-              }
-              const relevantEmail =
-                transactionCategory === "bought"
-                  ? valueFor(product, ["buyeremail"])
-                  : valueFor(product, ["user"]);
-              return String(relevantEmail || "").toLowerCase() === currentEmail;
-            });
-
-            if (history.length === 0) {
-              return (
-                <Typography color="text.secondary">
-                  No {transactionCategory} transactions yet.
-                </Typography>
-              );
-            }
-
-            return (
-              <Box
-                sx={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))",
-                  gap: 3,
-                }}
-              >
-                {history.map((product) => (
-                  <Card
-                    key={valueFor(product, ["_id", "id"])}
-                    onClick={() => navigate("/purchase", { state: { product } })}
-                    sx={{
-                      cursor: "pointer",
-                      transition: "transform 0.2s, box-shadow 0.2s",
-                      "&:hover": {
-                        transform: "translateY(-4px)",
-                        boxShadow: 6,
-                      },
-                    }}
-                  >
-                    {valueFor(product, ["imageurl", "image_url"]) && (
-                      <Box
-                        component="img"
-                        src={valueFor(product, ["imageurl", "image_url"])}
-                        alt={valueFor(product, ["title"]) || "Transaction item"}
-                        sx={{
-                          display: "block",
-                          width: "100%",
-                          height: 200,
-                          objectFit: "cover",
-                        }}
-                      />
-                    )}
-                    <CardContent>
-                      <Typography component="h3" variant="h6">
-                        {valueFor(product, ["title"]) || "Marketplace item"}
-                      </Typography>
-                      <Typography sx={{ fontWeight: 700 }}>
-                        {formatPrice(valueFor(product, ["price"]))}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {transactionCategory === "bought"
-                          ? `Seller: ${valueFor(product, ["sellername"]) || valueFor(product, ["user"])}`
-                          : `Buyer: ${valueFor(product, ["buyeremail"])}`}
-                      </Typography>
-                    </CardContent>
-                  </Card>
-                ))}
-              </Box>
-            );
-          })()}
+          {loading ? (
+            <CircularProgress />
+          ) : error ? (
+            <Alert severity="error">{error}</Alert>
+          ) : transactionHistory.length === 0 ? (
+            <Typography color="text.secondary">
+              No {transactionCategory} transactions yet.
+            </Typography>
+          ) : (
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))",
+                gap: 3,
+              }}
+            >
+              {transactionHistory.map((product) => (
+                <Card
+                  key={valueFor(product, ["_id", "id"])}
+                  onClick={() => navigate("/purchase", { state: { product } })}
+                  sx={{
+                    cursor: "pointer",
+                    transition: "transform 0.2s, box-shadow 0.2s",
+                    "&:hover": {
+                      transform: "translateY(-4px)",
+                      boxShadow: 6,
+                    },
+                  }}
+                >
+                  {valueFor(product, ["imageurl", "image_url"]) && (
+                    <Box
+                      component="img"
+                      src={valueFor(product, ["imageurl", "image_url"])}
+                      alt={valueFor(product, ["title"]) || "Transaction item"}
+                      sx={{
+                        display: "block",
+                        width: "100%",
+                        height: 200,
+                        objectFit: "cover",
+                      }}
+                    />
+                  )}
+                  <CardContent>
+                    <Typography component="h3" variant="h6">
+                      {valueFor(product, ["title"]) || "Marketplace item"}
+                    </Typography>
+                    <Typography sx={{ fontWeight: 700 }}>
+                      {formatPrice(valueFor(product, ["price"]))}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {transactionCategory === "bought"
+                        ? `Seller: ${valueFor(product, ["sellername"]) || valueFor(product, ["user"])}`
+                        : `Buyer: ${valueFor(product, ["buyeremail"])}`}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              ))}
+            </Box>
+          )}
         </Box>
       )}
 
