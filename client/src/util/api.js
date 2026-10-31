@@ -238,8 +238,9 @@ const chatroom = {
     },
 }
 const review = {
-    getUserReviews: async (email) => {
-        let response = await fetch(serverRoute("reviews/"+email), {
+    getUserReviews: async (email, byReviewer = false) => {
+        let route = byReviewer ? "reviews/reviewer/" + email : "reviews/" + email;
+        let response = await fetch(serverRoute(route), {
             headers,
             method: 'GET'
         });

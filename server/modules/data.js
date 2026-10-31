@@ -631,7 +631,7 @@ const updateReview = async (review) => {
         context?.close();
     }
 }
-const retrieveUserReviews = async (email) => {
+const retrieveUserReviews = async (email, byReviewer = false) => {
     let reviews = [];
 
     let context = undefined;
@@ -639,7 +639,9 @@ const retrieveUserReviews = async (email) => {
         // Initialize the database
         context = await db.initDatabase(env.DB_URI);
 
-        reviews = await db.findDocuments(context, DATABASE_NAME, REVIEW_COLLECTION, {reviewee: email}, {});
+        reviews = await db.findDocuments(context, DATABASE_NAME, REVIEW_COLLECTION, {
+            [byReviewer ? "reviewer" : "reviewee"]: email
+        }, {});
     }
     catch (e) {
         console.error(e);

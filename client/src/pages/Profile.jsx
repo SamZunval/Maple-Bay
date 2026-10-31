@@ -23,6 +23,7 @@ import {
   Avatar,
   ToggleButtonGroup,
   ToggleButton,
+  Rating,
 } from "@mui/material";
 
 import { useNavigate } from "react-router-dom";
@@ -32,8 +33,9 @@ import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import duycky from "../assets/Ducky.png";
 import ProductListings from "../components/ProductListing";
+import ReviewPage from "../components/ReviewPage";
 
-import { products } from "../util/api";
+import { products, review } from "../util/api";
 import { users } from "../util/api";
 
 const valueFor = (product, fields) => {
@@ -91,6 +93,10 @@ const Profile = () => {
   const [showFeedback, setshowFeedback] = useState(false);
   const [showTransactions, setShowTransactions] = useState(false);
   const [transactionCategory, setTransactionCategory] = useState("bought");
+  const [reviewTarget, setReviewTarget] = useState(null);
+  const [reviewedProducts, setReviewedProducts] = useState(null);
+  const [receivedReviews, setReceivedReviews] = useState([]);
+  const [feedbackLoading, setFeedbackLoading] = useState(true);
 
 
   {/*Add product variables */}
@@ -151,6 +157,35 @@ const Profile = () => {
       active = false;
     };
   }, []);
+
+  useEffect(() => {
+    if (!currentUserEmail) {
+      setFeedbackLoading(false);
+      return;
+    }
+
+    review
+      .getUserReviews(currentUserEmail, true)
+      .then((reviews) =>
+        setReviewedProducts(reviews.map((item) => String(item.product))),
+      );
+    review.getUserReviews(currentUserEmail).then(async (reviews) => {
+      setReceivedReviews(
+        await Promise.all(
+          reviews.map(async (item) => {
+            const user = await users.getUserByEmail(item.reviewer);
+            return {
+              ...item,
+              reviewerName:
+                user?.businessName ||
+                `${user?.firstName || ""} ${user?.lastName || ""}`.trim() ||
+                item.reviewer,
+            };
+          }),
+        ),
+      );
+    }).finally(() => setFeedbackLoading(false));
+  }, [currentUserEmail]);
 
   const userEmail = String(currentUserEmail || "").trim().toLowerCase();
   const transactionHistory = productList.filter((product) => {
@@ -551,11 +586,43 @@ const Profile = () => {
                         ? `Seller: ${valueFor(product, ["sellername"]) || valueFor(product, ["user"])}`
                         : `Buyer: ${valueFor(product, ["buyeremail"])}`}
                     </Typography>
+                    {transactionCategory === "bought" &&
+                      reviewedProducts &&
+                      !reviewedProducts.includes(
+                        String(valueFor(product, ["_id", "id"])),
+                      ) && (
+                        <Button
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            setReviewTarget({
+                              reviewee:
+                                valueFor(product, ["selleremail"]) ||
+                                valueFor(product, ["user"]),
+                              product: valueFor(product, ["_id", "id"]),
+                            });
+                          }}
+                        >
+                          Review this item
+                        </Button>
+                      )}
                   </CardContent>
                 </Card>
               ))}
             </Box>
           )}
+          <ReviewPage
+            open={Boolean(reviewTarget)}
+            onClose={() => setReviewTarget(null)}
+            reviewer={currentUserEmail}
+            onSubmitted={() =>
+              setReviewedProducts((previous) => [
+                ...previous,
+                String(reviewTarget.product),
+              ])
+            }
+            reviewee={reviewTarget?.reviewee}
+            product={reviewTarget?.product}
+          />
         </Box>
       )}
 
@@ -601,9 +668,44 @@ const Profile = () => {
           >
             Feedback
           </Typography>
-          <Typography variant="body1" sx={{ mb: 2 }}>
-            This is the feedback section.
-          </Typography>
+          {feedbackLoading ? (
+            <Stack alignItems="center" sx={{ py: 6 }}>
+              <CircularProgress />
+            </Stack>
+          ) : receivedReviews.length === 0 ? (
+            <Typography color="text.secondary">No reviews yet.</Typography>
+          ) : (
+            <Stack spacing={2}>
+              <Typography>
+                Average rating:{" "}
+                {(
+                  receivedReviews.reduce(
+                    (total, item) => total + Number(item.value),
+                    0,
+                  ) / receivedReviews.length
+                ).toFixed(1)}{" "}
+                / 5
+              </Typography>
+              {receivedReviews.map((item) => (
+                <Paper key={item._id} sx={{ p: 2 }}>
+                  <Typography>
+                    Item:{" "}
+                    {valueFor(
+                      productList.find(
+                        (product) =>
+                          String(valueFor(product, ["_id", "id"])) ===
+                          String(item.product),
+                      ) || {},
+                      ["title"],
+                    ) || item.product}
+                  </Typography>
+                  <Typography>From: {item.reviewerName}</Typography>
+                  <Rating value={Number(item.value)} readOnly />
+                  <Typography>{item.comment}</Typography>
+                </Paper>
+              ))}
+            </Stack>
+          )}
         </Box>
       )}
 

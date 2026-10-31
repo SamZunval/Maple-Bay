@@ -251,6 +251,11 @@ app.get('/reviews/:what', async (_request, response) => {
     let reviews = await retrieveUserReviews(email);
     response.json(reviews);
 });
+app.get('/reviews/reviewer/:what', async (_request, response) => {
+    const email = _request.params.what;
+    let reviews = await retrieveUserReviews(email, true);
+    response.json(reviews);
+});
 /*
 app.get('/bookmark', function (req, res) {//handles routing for the client
   res.sendFile("public/index.html",{ root: '.' });

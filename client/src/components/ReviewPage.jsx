@@ -23,7 +23,8 @@ function ReviewPage(props) {
 
   const handleReview = async() => {
     var rev = {reviewer: reviewer, reviewee: reviewee, product: product,comment: comment, value: value};
-    await review.addReview(rev);
+    const response = await review.addReview(rev);
+    if (response.ok) props.onSubmitted?.();
     onClose();
   };
 
