@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
     Paper,
@@ -17,6 +17,7 @@ import {
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import * as api from "../util/api"
+import ProvinceDropdown from "../components/ProvinceDropdown";
 
 const AddProduct = () => {
     const navigate = useNavigate();
@@ -57,9 +58,13 @@ const AddProduct = () => {
 
     const [listingType, setListingType] = useState("peer-to-peer");
 
+    useEffect(() => {
+        console.log("Updated province:", product.province);
+    }, [product.province]);
+
     const handleProductChange = (event) => {
         const { name, value } = event.target;
-
+        console.log(`Field changed: ${name}, New value: ${value}`);
         setProduct((previousProduct) => ({
             ...previousProduct,
             [name]: value,
@@ -273,13 +278,13 @@ const AddProduct = () => {
                             onChange={handleProductChange}
                         />
 
-                        <TextField
-                            fullWidth
-                            required
-                            label="Province"
+
+                        
+                        <ProvinceDropdown
                             name="province"
-                            value={product.province}
+                            value={product.province || ''}
                             onChange={handleProductChange}
+                            required
                         />
                     </Box>
 

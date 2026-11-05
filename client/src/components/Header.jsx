@@ -23,13 +23,23 @@ const Header = (props) => {
  const [anchor, setAnchor] = useState(null);
  const [numMessages, setNumMessages] = useState(0);
 
- const getNumMessages = async () => {
-  if(isLoggedIn()){
-    const user = JSON.parse(sessionStorage.getItem("userInfo"));
-    var num = await api.chatroom.getUnreadMessages(user.email);
-    setNumMessages(num);
+ 
+  const isLoggedIn = () => {
+    if (!sessionStorage.getItem("userInfo")) {
+      return false;
+    }
+    else{
+      return true;
+    }
   }
- }
+  
+  const getNumMessages = async () => {
+    if(isLoggedIn()){
+      const user = JSON.parse(sessionStorage.getItem("userInfo"));
+      var num = await api.chatroom.getUnreadMessages(user.email);
+      setNumMessages(num);
+    }
+  }
 
  useEffect(() => {
         const interval = setInterval(getNumMessages, 30000);
@@ -39,7 +49,7 @@ const Header = (props) => {
 
  const handleMenuClick = (path) => {
     if (!sessionStorage.getItem("userInfo")) {
-      alert("Please log in to access this page.");
+      //alert("Please log in to access this page.");
       setAnchor(null);
       return;
     }
@@ -67,15 +77,7 @@ const Header = (props) => {
     return false
   }
 
-    const isLoggedIn = () => {
-      if (!sessionStorage.getItem("userInfo")) {
-        return false;
-      }
-      else{
-        return true;
-      }
-    }
-  
+
 
   const handleLogout = () => {
     sessionStorage.clear(); // removes EVERYTHING from session storage

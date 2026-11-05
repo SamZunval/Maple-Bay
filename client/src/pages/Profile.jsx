@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+//holy shit this is a lot of imports
 import {
   Paper,
   TextField,
@@ -24,7 +25,10 @@ import {
   ToggleButtonGroup,
   ToggleButton,
   Rating,
+  Fade,
 } from "@mui/material";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
 
 import { useNavigate } from "react-router-dom";
 import { IconButton, InputAdornment } from "@mui/material";
@@ -494,19 +498,26 @@ const Profile = () => {
       <Divider sx={{ width: "95%", my: 3 }} />
 
       {/*----------------------- Product Listings ---------------------------*/}
-      {showProducts && (
-        <ProductListings
-          productList={productList}
-          currentUserEmail={currentUserEmail}
-          loading={loading}
-          error={error}
-          filterByUser={true}
-          showAddButton={true}
-        />
-      )}
+      <Fade in={showProducts} timeout={200} mountOnEnter unmountOnExit>
+        <Box
+          sx={{
+            maxWidth: "2000px",
+            width: "95%",
+            mx: "auto",
+          }}>
+            <ProductListings
+                productList={productList}
+                currentUserEmail={currentUserEmail}
+                loading={loading}
+                error={error}
+                filterByUser={true}
+                showAddButton={true}
+            />
+        </Box>
+      </Fade>
 
       {/*Transaction history */}
-      {showTransactions && (
+      <Fade in={showTransactions} timeout={200} mountOnEnter unmountOnExit>
         <Box
           sx={{
             maxWidth: "2000px",
@@ -624,34 +635,88 @@ const Profile = () => {
             product={reviewTarget?.product}
           />
         </Box>
-      )}
+      </Fade>
 
       {/* About Section */}
-      {showAbout && (
+      <Fade in={showAbout} timeout={200} mountOnEnter unmountOnExit>
         <Box
-          sx={{
-            maxWidth: "2000px",
-            width: "95%",
-            mx: "auto",
-            px: { xs: 2, sm: 3 },
-            py: 5,
-          }}
-        >
-          <Typography
-            component="h2"
-            variant="h5"
-            sx={{ mb: 2, color: "#3d0f3e" }}
-          >
-            About
-          </Typography>
-          <Typography variant="body1" sx={{ mb: 2 }}>
-            {savedUser?.about || "No about information added yet."}
-          </Typography>
+            sx={{
+                maxWidth: "2000px",
+                width: "95%",
+                mx: "auto",
+                px: { xs: 2, sm: 3 },
+                py: 4,
+            }}
+          > 
+            <Box
+                sx={{
+                    backgroundColor: "secondary.main",
+                    borderRadius: 4,
+                    border: "1px solid #eadbea",
+                    p: { xs: 3, sm: 4 },
+                    boxShadow: "0px 3px 12px rgba(61, 15, 62, 0.06)",
+                }}
+            >
+                <Typography
+                    component="h2"
+                    variant="h5"
+                    sx={{
+                        mb: 3,
+                        color: "#3d0f3e",
+                        fontWeight: "bold",
+                    }}
+                >
+                    About Me
+                </Typography>
+
+                {/* Biography */}
+                <Box sx={{ mb: 3 }}>
+                    <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
+                        <InfoOutlinedIcon sx={{ color: "primary" }} />
+                        <Typography variant="subtitle1" fontWeight="bold" color="#3d0f3e">
+                            Introduction
+                        </Typography>
+                    </Stack>
+
+                    <Typography
+                        variant="body1"
+                        sx={{
+                            color: "text.secondary",
+                            lineHeight: 1.8,
+                            pl: 4,
+                        }}
+                    >
+                        {savedUser?.about || "No about information added yet."}
+                    </Typography>
+                </Box>
+
+                <Divider sx={{ borderColor: "#eadbea", my: 2 }} />
+
+                {/* Location */}
+                <Box>
+                    <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
+                        <LocationOnOutlinedIcon sx={{ color: "primary" }} />
+                        <Typography variant="subtitle1" fontWeight="bold" color="#3d0f3e">
+                            Location
+                        </Typography>
+                    </Stack>
+
+                    <Typography
+                        variant="body1"
+                        sx={{ color: "text.secondary", pl: 4 }}
+                    >
+                        {savedUser?.province && savedUser?.city
+                            ? `${savedUser.city}, ${savedUser.province}`
+                            : "No location information added yet."}
+                    </Typography>
+                </Box>
+            </Box>
         </Box>
-      )}
+      </Fade>
+
 
       {/* Feedback Section */}
-      {showFeedback && (
+      <Fade in={showFeedback} timeout={200} mountOnEnter unmountOnExit>
         <Box
           sx={{
             maxWidth: "2000px",
@@ -707,7 +772,9 @@ const Profile = () => {
             </Stack>
           )}
         </Box>
-      )}
+      </Fade>
+
+      <Divider sx={{ width: "95%", my: 3 }} />
 
       {/*------------------------- Edit Profile Modle ------------------------------------------------*/}
       <Dialog

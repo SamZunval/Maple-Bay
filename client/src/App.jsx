@@ -26,7 +26,7 @@ import { createTheme, ThemeProvider } from "@mui/material";
 
   const ProtectedRoute = ({ children }) => {
       if (!sessionStorage.getItem("userInfo")) {
-          alert("Please log in to access this page.");
+          //alert("Please log in to access this page.");
           return <Navigate to="/signup" replace />;
       }
 
@@ -35,7 +35,6 @@ import { createTheme, ThemeProvider } from "@mui/material";
 
   const ManagerRoute = ({ children }) => {
       if (!sessionStorage.getItem("userInfo")) {
-          alert("Please log in to access this page.");
           return <Navigate to="/signup" replace />;
       }
       else{

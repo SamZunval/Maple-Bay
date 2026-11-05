@@ -13,7 +13,11 @@ import {
   Card,
   CardContent,
   Button,
+  InputAdornment ,
+  Divider,
+   
 } from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
 
 import AddIcon from "@mui/icons-material/Add";
 import { useNavigate } from "react-router-dom";
@@ -113,37 +117,76 @@ const ProductListings = ({productList, loading, error, currentUserEmail, filterB
         py: 5,
         }}
     >
+        {/* THE SEARCH STACK*/}
         <Stack
-        direction={{ xs: "column", sm: "row" }}
-        spacing={2}
-        sx={{ mb: 4 }}
+            direction={{ xs: "column", sm: "row" }}
+            spacing={0}
+            sx={{
+                mb: 4,
+                backgroundColor: "background.paper",
+                border: 1,
+                borderColor: "divider",
+                borderRadius: "30px",
+                overflow: "hidden",
+            }}
         >
-        <TextField
-            fullWidth
-            label="Search listings"
-            placeholder="Laptop, phone, tablet, etc."
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-        />
-
-        <FormControl sx={{ minWidth: { xs: "100%", sm: 220 } }}>
-            <InputLabel id="listing-category-label">
-            Category
-            </InputLabel>
-            <Select
-            labelId="listing-category-label"
-            label="Category"
-            value={category}
-            onChange={(event) => setCategory(event.target.value)}
+            <TextField
+                fullWidth
+                placeholder="Search the Bay"
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                InputProps={{
+                    startAdornment: (
+                        <InputAdornment position="start">
+                            <SearchIcon sx={{ color: "text.secondary" }} />
+                        </InputAdornment>
+                    ),
+                }}
+                sx={{
+                    flex: 1,
+                    "& .MuiOutlinedInput-root": {
+                        borderRadius: 0,
+                        backgroundColor: "transparent",
+                        "& fieldset": {
+                            border: "none",
+                        },
+                    },
+                }}
+            />
+            <Divider
+                orientation="vertical"
+                flexItem
+                sx={{
+                    display: { xs: "none", sm: "block" },
+                    borderColor: "divider",
+                }}
+            />
+            <FormControl
+                sx={{
+                    minWidth: { xs: "100%", sm: 220 },
+                }}
             >
-            <MenuItem value="all">All categories</MenuItem>
-            {categories.map((item) => (
-                <MenuItem key={item} value={item}>
-                {item}
-                </MenuItem>
-            ))}
-            </Select>
-        </FormControl>
+                <Select
+                    labelId="listing-category-label"
+                    label="Category"
+                    value={category}
+                    onChange={(event) => setCategory(event.target.value)}
+                    sx={{
+                        borderRadius: 0,
+                        backgroundColor: "transparent",
+                        "& fieldset": {
+                            border: "none",
+                        },
+                    }}
+                >
+                    <MenuItem value="all">All categories</MenuItem>
+                    {categories.map((item) => (
+                        <MenuItem key={item} value={item}>
+                            {item}
+                        </MenuItem>
+                    ))}
+                </Select>
+            </FormControl>
         </Stack>
 
         <Typography
@@ -263,40 +306,41 @@ const ProductListings = ({productList, loading, error, currentUserEmail, filterB
                     sx={{
                         display: "block",
                         width: "100%",
-                        height: 200,
+                        height: 260, //ajust the height as needed
                         objectFit: "cover",
                         bgcolor: "grey.100",
                     }}
                     />
                 )}
 
-                <CardContent>
+                {/* THE STACK */}
+                <CardContent sx={{ p: 2 }}>
                     <Stack
-                    direction="row"
+                    direction="column"
                     justifyContent="space-between"
-                    alignItems="flex-start"
+                    alignItems="center"
                     spacing={1}
                     >
                     <Typography
                         component="h3"
-                        variant="h6"
-                        sx={{ color: "#3d0f3e", lineHeight: 1.3 }}
+                        variant="subtitle1"
+                        sx={{
+                            color: "#3d0f3e", 
+                            lineHeight: 1.3 ,
+                            mt: 1.5,
+                            display: "-webkit-box",
+                            WebkitBoxOrient: "vertical",
+                            WebkitLineClamp: 2,
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                        }}
                     >
                         {title}
                     </Typography>
 
-                    {price !== undefined && (
-                        <Typography
-                        sx={{ fontWeight: 700, whiteSpace: "nowrap" }}
-                        >
-                        {formatPrice(price)}
-                        </Typography>
-                    )}
-                    </Stack>
-
                     {(categoryName || condition || listingType) && (
                     <Typography
-                        variant="body2"
+                        variant="body1"
                         color="text.secondary"
                         sx={{ mt: 1 }}
                     >
@@ -310,20 +354,33 @@ const ProductListings = ({productList, loading, error, currentUserEmail, filterB
                     </Typography>
                     )}
 
-                    {description && (
+                    {price !== undefined && (
+                        <Typography
+                        sx={{ fontWeight: 700, whiteSpace: "nowrap", justifyContent: "center" }}
+                        >
+                        {formatPrice(price)}
+                        </Typography>
+                    )}
+                    </Stack>
+
+                    
+
+                    {/* {description && (
                     <Typography
                         color="text.secondary"
+                        variant="body2"
                         sx={{
-                        mt: 1.5,
-                        display: "-webkit-box",
-                        WebkitBoxOrient: "vertical",
-                        WebkitLineClamp: 3,
-                        overflow: "hidden",
+                            mt: 1.5,
+                            display: "-webkit-box",
+                            WebkitBoxOrient: "vertical",
+                            WebkitLineClamp: 2,
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
                         }}
                     >
                         {description}
                     </Typography>
-                    )}
+                    )} */}
 
                     {(seller || location) && (
                     <Typography variant="body2" sx={{ mt: 2 }}>
