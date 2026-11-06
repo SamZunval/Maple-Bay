@@ -89,8 +89,10 @@ const Purchase = () => {
         navigate("/chat");
     };
 
-    const handleProfile = async () => {
-        console.log("Show profile");
+    const handleProfile = () => {
+        navigate("/profile", {
+            state: { sellerEmail: product.sellerEmail || product.user },
+        });
     };
 
     return (
@@ -201,7 +203,7 @@ const Purchase = () => {
                                 </Button>
 
                                 <Button
-                                    variant="outlined"
+                                    variant="contained"
                                     fullWidth
                                     onClick={handleProfile}
                                 >

@@ -30,7 +30,7 @@ import {
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
 
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { IconButton, InputAdornment } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import Visibility from "@mui/icons-material/Visibility";
@@ -101,11 +101,17 @@ const Profile = () => {
   const [reviewedProducts, setReviewedProducts] = useState(null);
   const [receivedReviews, setReceivedReviews] = useState([]);
   const [feedbackLoading, setFeedbackLoading] = useState(true);
+  const [profileUser, setProfileUser] = useState(null);
 
 
   {/*Add product variables */}
 
+  const location = useLocation();
   const navigate = useNavigate();
+  const sellerEmail = location.state?.sellerEmail;
+  const isPublicProfile = Boolean(sellerEmail);
+  const profileEmail = sellerEmail || currentUserEmail;
+  const displayedUser = isPublicProfile ? profileUser : savedUser;
 
   {
     /* Edit variables code */
@@ -163,20 +169,28 @@ const Profile = () => {
   }, []);
 
   useEffect(() => {
-    if (!currentUserEmail) {
+    if (!profileEmail) {
       setFeedbackLoading(false);
       return;
     }
 
-    review
-      .getUserReviews(currentUserEmail, true)
-      .then((reviews) =>
-        setReviewedProducts(reviews.map((item) => String(item.product))),
-      );
-    review.getUserReviews(currentUserEmail).then(async (reviews) => {
-      setReceivedReviews(
-        await Promise.all(
-          reviews.map(async (item) => {
+    let active = true;
+    setFeedbackLoading(true);
+
+    const loadReviews = async () => {
+      try {
+        if (!isPublicProfile) {
+          const reviewsGiven = await review.getUserReviews(profileEmail, true);
+          if (active) {
+            setReviewedProducts(
+              reviewsGiven.map((item) => String(item.product)),
+            );
+          }
+        }
+
+        const reviewsReceived = await review.getUserReviews(profileEmail);
+        const reviewsWithNames = await Promise.all(
+          reviewsReceived.map(async (item) => {
             const user = await users.getUserByEmail(item.reviewer);
             return {
               ...item,
@@ -186,10 +200,46 @@ const Profile = () => {
                 item.reviewer,
             };
           }),
-        ),
-      );
-    }).finally(() => setFeedbackLoading(false));
-  }, [currentUserEmail]);
+        );
+        if (active) {
+          setReceivedReviews(reviewsWithNames);
+        }
+      } catch (err) {
+        console.error("Error loading profile reviews:", err);
+      } finally {
+        if (active) {
+          setFeedbackLoading(false);
+        }
+      }
+    };
+
+    loadReviews();
+    return () => {
+      active = false;
+    };
+  }, [profileEmail, isPublicProfile]);
+
+  useEffect(() => {
+    let active = true;
+    setProfileUser(null);
+
+    if (sellerEmail) {
+      users
+        .getUserByEmail(sellerEmail)
+        .then((user) => {
+          if (active) {
+            setProfileUser(user);
+          }
+        })
+        .catch((err) => {
+          console.error("Error loading profile:", err);
+        });
+    }
+
+    return () => {
+      active = false;
+    };
+  }, [sellerEmail]);
 
   const userEmail = String(currentUserEmail || "").trim().toLowerCase();
   const transactionHistory = productList.filter((product) => {
@@ -371,7 +421,11 @@ const Profile = () => {
           {/* Image */}
           <Box
             component="img"
-            src={image ? image : duycky}
+            src={
+              isPublicProfile
+                ? displayedUser?.profileImage || duycky
+                : image || duycky
+            }
             alt="Company Logo"
             sx={{
               width: "100%",
@@ -396,7 +450,10 @@ const Profile = () => {
               mt: 0,
             }}
           >
-            {businessName ? businessName : firstName + " " + lastName}
+            {isPublicProfile
+              ? displayedUser?.businessName ||
+                `${displayedUser?.firstName || ""} ${displayedUser?.lastName || ""}`.trim()
+              : businessName || `${firstName} ${lastName}`}
           </Typography>
 
           {/*Additional text */}
@@ -409,22 +466,24 @@ const Profile = () => {
               alignSelf: "center",
             }}
           >
-            {userType?.toLowerCase() === "business" ? "Business" : "Personal"}{" "}
+            {(isPublicProfile ? displayedUser?.userType : userType)?.toLowerCase() === "business" ? "Business" : "Personal"}{" "}
             account
           </Typography>
 
           {/* edit button */}
 
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => {
-              setOpenEditProfile(true);
-            }}
-            sx={{ gridColumn: 2, gridRow: 3, justifySelf: "end", mt: 1 }}
-          >
-            ✏️ Edit Profile
-          </Button>
+          {!isPublicProfile && (
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => {
+                setOpenEditProfile(true);
+              }}
+              sx={{ gridColumn: 2, gridRow: 3, justifySelf: "end", mt: 1 }}
+            >
+              ✏️ Edit Profile
+            </Button>
+          )}
         </Box>
       </Paper>
 
@@ -478,20 +537,23 @@ const Profile = () => {
         >
           Feedback
         </Button>
-        <Divider orientation="vertical" flexItem />
-
-        <Button
-          variant="text"
-          color="black"
-          onClick={() => {
-            setShowTransactions(true);
-            setshowProducts(false);
-            setshowAbout(false);
-            setshowFeedback(false);
-          }}
-        >
-          Transactions
-        </Button>
+        {!isPublicProfile && (
+          <>
+            <Divider orientation="vertical" flexItem />
+            <Button
+              variant="text"
+              color="black"
+              onClick={() => {
+                setShowTransactions(true);
+                setshowProducts(false);
+                setshowAbout(false);
+                setshowFeedback(false);
+              }}
+            >
+              Transactions
+            </Button>
+          </>
+        )}
       </Paper>
 
       {/* Divider */}
@@ -507,17 +569,17 @@ const Profile = () => {
           }}>
             <ProductListings
                 productList={productList}
-                currentUserEmail={currentUserEmail}
+                currentUserEmail={profileEmail}
                 loading={loading}
                 error={error}
                 filterByUser={true}
-                showAddButton={true}
+                showAddButton={!isPublicProfile}
             />
         </Box>
       </Fade>
 
       {/*Transaction history */}
-      <Fade in={showTransactions} timeout={200} mountOnEnter unmountOnExit>
+      <Fade in={showTransactions && !isPublicProfile} timeout={200} mountOnEnter unmountOnExit>
         <Box
           sx={{
             maxWidth: "2000px",
@@ -686,7 +748,8 @@ const Profile = () => {
                             pl: 4,
                         }}
                     >
-                        {savedUser?.about || "No about information added yet."}
+                        {(isPublicProfile ? displayedUser?.about : savedUser?.about) ||
+                            "No about information added yet."}
                     </Typography>
                 </Box>
 
@@ -705,8 +768,9 @@ const Profile = () => {
                         variant="body1"
                         sx={{ color: "text.secondary", pl: 4 }}
                     >
-                        {savedUser?.province && savedUser?.city
-                            ? `${savedUser.city}, ${savedUser.province}`
+                        {(isPublicProfile ? displayedUser?.province : savedUser?.province) &&
+                        (isPublicProfile ? displayedUser?.city : savedUser?.city)
+                            ? `${isPublicProfile ? displayedUser.city : savedUser.city}, ${isPublicProfile ? displayedUser.province : savedUser.province}`
                             : "No location information added yet."}
                     </Typography>
                 </Box>
@@ -778,7 +842,7 @@ const Profile = () => {
 
       {/*------------------------- Edit Profile Modle ------------------------------------------------*/}
       <Dialog
-        open={openEditProfile}
+        open={!isPublicProfile && openEditProfile}
         onClose={() => setOpenEditProfile(false)}
         fullWidth
         maxWidth="sm"
