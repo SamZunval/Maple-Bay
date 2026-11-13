@@ -24,6 +24,10 @@ const deleteDocument = (context, database, collection, document) => {
     return context.db(database).collection(collection).deleteOne(document);
 }
 
+const deleteDocuments = (context, database, collection, document) => {
+    return context.db(database).collection(collection).deleteMany(document);
+}
+
 const deleteCollection = (context, database, collection) => {
     return context.db(database).collection(collection).drop();
 }
@@ -44,6 +48,9 @@ const replaceDocument = (context, database, collection, criteria,  change) => {
 const updateDocument = (context, database, collection, criteria,  change) => {
     return context.db(database).collection(collection).updateOne(criteria, change);
 }
+const updateDocuments = (context, database, collection, criteria,  change) => {
+    return context.db(database).collection(collection).updateMany(criteria, change);
+}
 export {
     initDatabase,
     insertDocument,
@@ -54,5 +61,7 @@ export {
     findDocument,
     findDocuments,
     replaceDocument,
-    updateDocument
+    updateDocument,
+    deleteDocuments,
+    updateDocuments
 };

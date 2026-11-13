@@ -20,15 +20,20 @@ import {  retrieveUsers,
     retrieveProducts,
     retrieveProduct,
     retrieveUserProducts,
-    getUserChatRooms,
     newChatRoom,
+    getUserChatRooms,
     updateLeftRoom,
     updateJoinRoom,
     updateMessageSent,
     getUnreadMessages,
     getUserByEmail,
     addReview,
-    retrieveUserReviews} from './data.js';
+    updateReview,
+    retrieveUserReviews,
+    addReport,
+    retrieveUserReports,
+    retrieveReportedUsers,
+    banUser} from './data.js';
 
 import * as colors from "./colors.js";
 import * as data from "./messager.js";
@@ -254,6 +259,48 @@ app.get('/reviews/:what', async (_request, response) => {
 app.get('/reviews/reviewer/:what', async (_request, response) => {
     const email = _request.params.what;
     let reviews = await retrieveUserReviews(email, true);
+    response.json(reviews);
+});
+
+//reports
+app.post('/db/addReport', async (_request, response) => {
+    try {
+        let good = await addReport(_request.body);
+        if(good){
+            response.sendStatus(200);
+        }
+        else {
+            response.sendStatus(400);
+        }
+    }
+    catch (e) {
+        console.error(e);
+        response.sendStatus(500);
+    }
+});
+app.post('/db/banUser/:what', async (_request, response) => {
+    try {
+        const email = _request.params.what;
+        let good = await banUser(email);
+        if(good){
+            response.sendStatus(200);
+        }
+        else {
+            response.sendStatus(400);
+        }
+    }
+    catch (e) {
+        console.error(e);
+        response.sendStatus(500);
+    }
+});
+app.get('/reports', async (_request, response) => {
+    let reviews = await retrieveReportedUsers();
+    response.json(reviews);
+});
+app.get('/reports/:what', async (_request, response) => {
+    const email = _request.params.what;
+    let reviews = await retrieveUserReports(email);
     response.json(reviews);
 });
 /*

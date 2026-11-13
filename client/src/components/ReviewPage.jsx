@@ -32,7 +32,12 @@ function ReviewPage(props) {
     <Dialog fullWidth={true} onClose={handleClose} open={open} closeAfterTransition disableRestoreFocus={true} slotProps={{
     backdrop: {
       transitionDuration: { exit: 0 } // Speeds up the DOM teardown
-    }
+    },
+    paper: {
+          sx: {
+            p: 3, // 24px padding on all sides
+          },
+        },
   }}>
       <DialogTitle sx={{ textAlign: 'center' }}>Review</DialogTitle>
       <div

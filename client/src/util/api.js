@@ -260,6 +260,46 @@ const review = {
         return response;
     },
 }
+const report = {
+    getUserReports: async (email) => {
+        let response = await fetch(serverRoute('/reports/'+email), {
+            headers,
+            method: 'GET'
+        });
+        let data = await response.json();
+        return data;
+    },
+    addReport: async (review) => {
+        let response = await fetch(serverRoute("db/addReport"), {
+            headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+            },
+            method: 'POST',
+            json: true, 
+            body: JSON.stringify(review),
+        });
+        return response;
+    },
+    banUser: async (email) => {
+        let response = await fetch(serverRoute("/db/banUser/"+email), {
+            headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+            },
+            method: 'POST'
+        });
+        return response;
+    },
+    getReportedUsers: async () => {
+        let response = await fetch(serverRoute('/reports'), {
+            headers,
+            method: 'GET'
+        });
+        let data = await response.json();
+        return data;
+    },
+}
 export {
     users,
     images,
@@ -267,5 +307,6 @@ export {
     stats,
     products,
     chatroom,
-    review
+    review,
+    report
 }

@@ -8,6 +8,7 @@ const USER_COLLECTION = "Users";
 const PRODUCT_COLLECTION = "Products";
 const CHATGROUP_COLLECTION = "ChatGroups";
 const REVIEW_COLLECTION = "Reviews";
+const REPORT_COLLECTION = "Reports";
 import crypto from 'node:crypto';
 function hashPassword(password, salt) {
     return new Promise((resolve, reject) => {
@@ -348,7 +349,7 @@ const retrieveProducts = async () => {
         // Initialize the database
         context = await db.initDatabase(env.DB_URI);
 
-        users = await db.findDocuments(context, DATABASE_NAME, PRODUCT_COLLECTION, {}, {});
+        users = await db.findDocuments(context, DATABASE_NAME, PRODUCT_COLLECTION, { banned: { $exists: false } }, {});
     }
     catch (e) {
         console.error(e);
@@ -652,6 +653,96 @@ const retrieveUserReviews = async (email, byReviewer = false) => {
 
     return reviews;
 }
+
+const addReport = async (review) => {
+
+    let context = undefined;
+    try {
+        // Initialize the database
+        context = await db.initDatabase(env.DB_URI);
+        var user = await getUserByEmail(review.reviewee);
+        //set number of times user has been reported
+        if('reported' in user){
+            user.reported++;
+        }
+        else {
+            user.reported = 1;
+        }
+        await updateUser(user);
+        let result = await db.insertDocument(context, DATABASE_NAME, REPORT_COLLECTION, review);
+        return true;
+    }
+    catch (e) {
+        console.error(e);
+        return false;
+    }
+    finally {
+        context?.close();
+    }
+}
+
+const retrieveUserReports = async (email) => {
+    let reviews = [];
+
+    let context = undefined;
+    try {
+        // Initialize the database
+        context = await db.initDatabase(env.DB_URI);
+
+        reviews = await db.findDocuments(context, DATABASE_NAME, REPORT_COLLECTION, {
+            "reviewee": email
+        }, {});
+    }
+    catch (e) {
+        console.error(e);
+    }
+    finally {
+        context?.close();
+    }
+
+    return reviews;
+}
+
+const retrieveReportedUsers = async () => {
+    let users = [];
+
+    let context = undefined;
+    try {
+        // Initialize the database
+        context = await db.initDatabase(env.DB_URI);
+
+        users = await db.findDocuments(context, DATABASE_NAME, USER_COLLECTION, {reported: { $gt: 0 }}, {});
+    }
+    catch (e) {
+        console.error(e);
+    }
+    finally {
+        context?.close();
+    }
+
+    return users;
+}
+const banUser = async (user_id) => {
+    let users = [];
+
+    let context = undefined;
+    try {
+        // Initialize the database
+        context = await db.initDatabase(env.DB_URI);
+
+        //add banned tag to user and their products
+        users = await db.updateDocument(context, DATABASE_NAME, USER_COLLECTION, {userName : user_id}, {banned: true});
+        await db.updateDocuments(context,DATABASE_NAME,PRODUCT_COLLECTION, {user: user_id},{banned: true});
+    }
+    catch (e) {
+        console.error(e);
+    }
+    finally {
+        context?.close();
+    }
+
+    return users;
+}
 export {
     DATABASE_NAME,
     IMAGE_COLLECTION,
@@ -682,5 +773,9 @@ export {
     getUserByEmail,
     addReview,
     updateReview,
-    retrieveUserReviews
+    retrieveUserReviews,
+    addReport,
+    retrieveUserReports,
+    retrieveReportedUsers,
+    banUser
 };

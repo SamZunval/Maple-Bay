@@ -19,6 +19,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import * as fns from "date-fns";
 import * as api from "../util/api";
 import ReviewPage from "./ReviewPage";
+import ReportPage from "./ReportPage";
 const Chat = (props) => {
     /* Menu */
      const [menuOpen, setMenuOpen] = useState(false);
@@ -32,6 +33,15 @@ const Chat = (props) => {
 
     const handleClose = () => {
         setOpen(false);
+    };
+    //report menu
+     const [reportopen, setReportOpen] = useState(false);
+    const handleReportClickOpen = () => {
+        setReportOpen(true);
+    };
+
+    const handleReportClose = () => {
+        setReportOpen(false);
     };
     const renderMenu = () => {
         const users = props.roomLog ?? [];
@@ -64,6 +74,18 @@ const Chat = (props) => {
                     <ReviewPage
                         open={open}
                         onClose={handleClose}
+                        reviewer={props.userName}
+                        reviewee={props.theirEmail}
+                        product={props.product}
+                    />
+                </div>
+                }
+                {
+                <div>
+                    <Button onClick={handleReportClickOpen} color="error">Report User</Button>
+                    <ReportPage
+                        open={reportopen}
+                        onClose={handleReportClose}
                         reviewer={props.userName}
                         reviewee={props.theirEmail}
                         product={props.product}
