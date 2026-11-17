@@ -24,6 +24,12 @@ const Purchase = () => {
     const [error, setError] = useState("");
 
     const userInfo = JSON.parse(sessionStorage.getItem("userInfo") || "null");
+    const sellerEmail = String(product?.sellerEmail || product?.user || "")
+        .trim()
+        .toLowerCase();
+    const isSeller =
+        Boolean(userInfo?.email) &&
+        sellerEmail === String(userInfo.email).trim().toLowerCase();
 
     const [seller, setSeller] = useState(null);
 
@@ -193,7 +199,7 @@ const Purchase = () => {
                         <Divider sx={{ my: 2 }} />
 
                         {/* BUTTNS */}
-                        {String(product.status || "").toLowerCase() === "active" && (
+                        {String(product.status || "").toLowerCase() === "active" && !isSeller && (
                             <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5, mb: 3 }}>
                                 {product.listingType === "peer-to-peer" ? (
                                     <Button

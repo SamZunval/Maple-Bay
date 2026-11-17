@@ -68,7 +68,7 @@ const Chat = (props) => {
                 {allowComplete &&
                     <Button onClick={() => {markAsCompelete()}} >Mark Transaction as Complete</Button>
                 }
-                {
+                {props.seller === false && (
                 <div>
                     <Button onClick={handleClickOpen} >Leave a Review</Button>
                     <ReviewPage
@@ -79,7 +79,7 @@ const Chat = (props) => {
                         product={props.product}
                     />
                 </div>
-                }
+                )}
                 {
                 <div>
                     <Button onClick={handleReportClickOpen} color="error">Report User</Button>

@@ -63,19 +63,23 @@ const ProductListings = ({productList, loading, error, currentUserEmail, filterB
 
   //Filtration
   const visibleProducts = productList.filter((product) => {
-    
+    const productEmail = String(
+      product.sellerEmail || product.user || "",
+    ).trim().toLowerCase();
+
     // Displays products belonging to the current user
     if (filterByUser) {
-        const productEmail = String(
-            product.sellerEmail || "",
-        ).trim().toLowerCase();
-
         if (
             !currentUserEmail ||
             productEmail !== currentUserEmail.trim().toLowerCase()
         ) {
             return false;
         }
+    } else if (
+      currentUserEmail &&
+      productEmail === currentUserEmail.trim().toLowerCase()
+    ) {
+        return false;
     }
 
     // Displays products that are active

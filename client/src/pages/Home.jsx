@@ -5,6 +5,7 @@ import { products } from "../util/api";
 import ProductListings from "../components/ProductListing";
 
 const Home = () => {
+  const userInfo = JSON.parse(sessionStorage.getItem("userInfo") || "null");
   const [productList, setProductList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -55,6 +56,7 @@ const Home = () => {
 
       <ProductListings
         productList={productList}
+        currentUserEmail={userInfo?.email}
         loading={loading}
         error={error}
       />
