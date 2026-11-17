@@ -100,7 +100,7 @@ const AddProduct = () => {
                         ? `${userInfo.firstName} ${userInfo.lastName}`
                         : userInfo.businessName,
                 sellerEmail: userInfo.email,
-                listingType: listingType,
+                listingType,
 
             };
             console.log("Submitting product:", newProduct);
@@ -224,7 +224,7 @@ const AddProduct = () => {
                     </TextField>
 
                     <FormControl>
-                        <FormLabel id="listing-type-label">Listing Type</FormLabel>
+                        <FormLabel id="listing-type-label">Delivery Method</FormLabel>
 
                         <RadioGroup
                             name="listingType"
@@ -235,13 +235,13 @@ const AddProduct = () => {
                             <FormControlLabel
                             value="peer-to-peer"
                             control={<Radio />}
-                            label="Pickup at user"
+                            label="Pickup from seller"
                             />
 
                             <FormControlLabel
                             value="business"
                             control={<Radio />}
-                            label="Shipping to address"
+                            label="Ship to buyer"
                             />
                         </RadioGroup>
                     </FormControl>

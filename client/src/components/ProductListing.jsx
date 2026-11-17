@@ -271,7 +271,6 @@ const ProductListings = ({productList, loading, error, currentUserEmail, filterB
                 "listingtype",
                 "sellertype",
             ]);
-
             const id = valueFor(product, ["_id", "id"]);
 
             return (
@@ -345,7 +344,7 @@ const ProductListings = ({productList, loading, error, currentUserEmail, filterB
                         sx={{ mt: 1 }}
                     >
                         {[
-                            categoryName, condition, listingType === "peer-to-peer" ? 
+                            categoryName, condition, listingType === "peer-to-peer" ?
                             "Pick up from seller" : "Shipping to buyer"
 
                         ]

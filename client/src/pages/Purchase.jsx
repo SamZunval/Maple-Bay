@@ -61,7 +61,7 @@ const Purchase = () => {
         try {
             const updatedProduct = {
                 ...product,
-                status: "sold",
+                status: "awaiting-shipment",
                 buyerEmail: userInfo.email,
             };
 
@@ -81,12 +81,22 @@ const Purchase = () => {
 
     const handleChat = async () => {
         if (!userInfo?.email) {
-            setError("Please log in to purchase this item.");
+            setError("Please log in to contact the seller.");
             return;
         }
 
-        await chatroom.newChatRoom(userInfo, product);
-        navigate("/chat");
+        try {
+            const response = await chatroom.newChatRoom(userInfo, {
+                ...product,
+                user: product.sellerEmail || product.user,
+            });
+            if (!response.ok) {
+                throw new Error("Unable to start a chat with the seller.");
+            }
+            navigate("/chat");
+        } catch (err) {
+            setError(err.message || "An error occurred while starting the chat.");
+        }
     };
 
     const handleProfile = () => {
@@ -183,24 +193,26 @@ const Purchase = () => {
                         <Divider sx={{ my: 2 }} />
 
                         {/* BUTTNS */}
-                        {String(product.status || "").toLowerCase() !== "sold" && (
+                        {String(product.status || "").toLowerCase() === "active" && (
                             <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5, mb: 3 }}>
-                                <Button
-                                    variant="contained"
-                                    fullWidth
-                                    onClick={handleChat}
-                                >
-                                    Talk to Seller
-                                </Button>
-
-                                <Button
-                                    variant="contained"
-                                    fullWidth
-                                    onClick={handlePurchase}
-                                    disabled={purchasing}
-                                >
-                                    {purchasing ? "Processing..." : "Purchase Item"}
-                                </Button>
+                                {product.listingType === "peer-to-peer" ? (
+                                    <Button
+                                        variant="contained"
+                                        fullWidth
+                                        onClick={handleChat}
+                                    >
+                                        Chat
+                                    </Button>
+                                ) : (
+                                    <Button
+                                        variant="contained"
+                                        fullWidth
+                                        onClick={handlePurchase}
+                                        disabled={purchasing}
+                                    >
+                                        {purchasing ? "Processing..." : "Buy Item"}
+                                    </Button>
+                                )}
 
                                 <Button
                                     variant="contained"
@@ -210,6 +222,16 @@ const Purchase = () => {
                                     View Profile
                                 </Button>
                             </Box>
+                        )}
+                        {product.status === "awaiting-shipment" && (
+                            <Typography sx={{ mb: 2 }} color="text.secondary">
+                                Purchase placed. The seller has not shipped this item yet.
+                            </Typography>
+                        )}
+                        {product.status === "shipped" && (
+                            <Typography sx={{ mb: 2 }} color="text.secondary">
+                                This item is in transit. Track and confirm delivery in Transactions.
+                            </Typography>
                         )}
 
                         {error && (

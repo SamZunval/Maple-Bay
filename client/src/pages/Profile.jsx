@@ -97,6 +97,7 @@ const Profile = () => {
   const [showFeedback, setshowFeedback] = useState(false);
   const [showTransactions, setShowTransactions] = useState(false);
   const [transactionCategory, setTransactionCategory] = useState("bought");
+  const [transactionError, setTransactionError] = useState("");
   const [reviewTarget, setReviewTarget] = useState(null);
   const [reviewedProducts, setReviewedProducts] = useState(null);
   const [receivedReviews, setReceivedReviews] = useState([]);
@@ -243,17 +244,82 @@ const Profile = () => {
 
   const userEmail = String(currentUserEmail || "").trim().toLowerCase();
   const transactionHistory = productList.filter((product) => {
-    const email =
-      transactionCategory === "bought"
-        ? valueFor(product, ["buyeremail"])
-        : valueFor(product, ["selleremail"]) || valueFor(product, ["user"]);
+    const status = String(valueFor(product, ["status"]) || "").toLowerCase();
+    const buyerEmail = String(valueFor(product, ["buyeremail"]) || "")
+      .trim()
+      .toLowerCase();
+    const sellerEmail = String(
+      valueFor(product, ["selleremail"]) || valueFor(product, ["user"]) || "",
+    )
+      .trim()
+      .toLowerCase();
+
+    if (!userEmail) return false;
+    if (transactionCategory === "shipping") {
+      return (
+        ["awaiting-shipment", "shipped"].includes(status) &&
+        (buyerEmail === userEmail || sellerEmail === userEmail)
+      );
+    }
 
     return (
-      String(valueFor(product, ["status"]) || "").toLowerCase() === "sold" &&
-      userEmail !== "" &&
-      String(email || "").trim().toLowerCase() === userEmail
+      status === "sold" &&
+      (transactionCategory === "bought" ? buyerEmail : sellerEmail) === userEmail
     );
   });
+
+  const updateShipmentStatus = async (product, status) => {
+    setTransactionError("");
+    const updatedProduct = {
+      ...product,
+      status,
+    };
+
+    try {
+      const response = await products.updateProduct(updatedProduct);
+      if (!response.ok) {
+        throw new Error("Unable to update the shipment status.");
+      }
+      setProductList((previous) =>
+        previous.map((item) =>
+          String(valueFor(item, ["_id", "id"])) ===
+          String(valueFor(product, ["_id", "id"]))
+            ? updatedProduct
+            : item,
+        ),
+      );
+    } catch (err) {
+      setTransactionError(err.message || "Unable to update the shipment status.");
+    }
+  };
+
+  useEffect(() => {
+    if (!showTransactions || transactionCategory !== "shipping") return;
+
+    let active = true;
+    const refreshShipments = async () => {
+      try {
+        const result = await products.getProducts();
+        if (!Array.isArray(result)) {
+          throw new Error("The product service returned an invalid response.");
+        }
+        if (active) {
+          setProductList(result);
+        }
+      } catch (err) {
+        if (active) {
+          setTransactionError(err.message || "Unable to refresh shipment status.");
+        }
+      }
+    };
+
+    refreshShipments();
+    const interval = window.setInterval(refreshShipments, 10000);
+    return () => {
+      active = false;
+      window.clearInterval(interval);
+    };
+  }, [showTransactions, transactionCategory]);
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -604,7 +670,13 @@ const Profile = () => {
           >
             <ToggleButton value="bought">Bought</ToggleButton>
             <ToggleButton value="sold">Sold</ToggleButton>
+            <ToggleButton value="shipping">Shipping</ToggleButton>
           </ToggleButtonGroup>
+          {transactionError && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {transactionError}
+            </Alert>
+          )}
           {loading ? (
             <CircularProgress />
           ) : error ? (
@@ -648,17 +720,59 @@ const Profile = () => {
                     />
                   )}
                   <CardContent>
+                    {(() => {
+                      const status = String(valueFor(product, ["status"]) || "").toLowerCase();
+                      const sellerEmail = String(
+                        valueFor(product, ["selleremail"]) || valueFor(product, ["user"]) || "",
+                      ).trim().toLowerCase();
+                      const isSeller = sellerEmail === userEmail;
+
+                      return transactionCategory === "shipping" ? (
+                        <>
+                          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                            Shipment status: {status === "shipped" ? "In transit" : "Awaiting shipment"}
+                          </Typography>
+                          {isSeller && status === "awaiting-shipment" && (
+                            <Button
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                updateShipmentStatus(product, "shipped");
+                              }}
+                            >
+                              Mark as shipped
+                            </Button>
+                          )}
+                          {!isSeller && status === "shipped" && (
+                            <Button
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                updateShipmentStatus(product, "sold");
+                              }}
+                            >
+                              Confirm delivery
+                            </Button>
+                          )}
+                          {isSeller && status === "shipped" && (
+                            <Typography variant="body2" color="text.secondary">
+                              Waiting for the buyer to confirm delivery.
+                            </Typography>
+                          )}
+                        </>
+                      ) : null;
+                    })()}
                     <Typography component="h3" variant="h6">
                       {valueFor(product, ["title"]) || "Marketplace item"}
                     </Typography>
                     <Typography sx={{ fontWeight: 700 }}>
                       {formatPrice(valueFor(product, ["price"]))}
                     </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {transactionCategory === "bought"
-                        ? `Seller: ${valueFor(product, ["sellername"]) || valueFor(product, ["user"])}`
-                        : `Buyer: ${valueFor(product, ["buyeremail"])}`}
-                    </Typography>
+                    {transactionCategory !== "shipping" && (
+                      <Typography variant="body2" color="text.secondary">
+                        {transactionCategory === "bought"
+                          ? `Seller: ${valueFor(product, ["sellername"]) || valueFor(product, ["user"])}`
+                          : `Buyer: ${valueFor(product, ["buyeremail"])}`}
+                      </Typography>
+                    )}
                     {transactionCategory === "bought" &&
                       reviewedProducts &&
                       !reviewedProducts.includes(
