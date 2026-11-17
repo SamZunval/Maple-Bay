@@ -9,13 +9,16 @@ import
     Divider, 
     Avatar,
     CircularProgress,
+    Tooltip
 } from "@mui/material";
 import { useState, useEffect} from "react";
-import { Button } from "@mui/material";
+import { Button, IconButton} from "@mui/material";
 import { products, chatroom } from "../util/api";
 import { users } from "../util/api";
-
+import FlagIcon from '@mui/icons-material/Flag';
+import ReportPage from "../components/ReportPage";
 const Purchase = () => {
+    const [reportopen, setReportOpen] = useState(false);
     const location = useLocation();
     const navigate = useNavigate();
 
@@ -52,7 +55,14 @@ const Purchase = () => {
     if (!product) {
         return <Navigate to="/" replace />;
     }
+    
+    const handleReportClickOpen = () => {
+        setReportOpen(true);
+    };
 
+    const handleReportClose = () => {
+        setReportOpen(false);
+    };
     //console.log("Purchase page received:", product);
 
     const handlePurchase = async () => {
@@ -164,8 +174,19 @@ const Purchase = () => {
                     >
                         <Typography variant="h4" gutterBottom>
                             {product.title || product.name || product.productName || "Product"}
+                            <Tooltip title="Report Product">
+                            <IconButton onClick={handleReportClickOpen} color="error">
+                                <FlagIcon />
+                            </IconButton>
+                            <ReportPage
+                                open={reportopen}
+                                onClose={handleReportClose}
+                                reviewer={userInfo.email}
+                                reviewee={product.sellerEmail}
+                                product={product._id}
+                            />
+                            </Tooltip>
                         </Typography>
-
                         <Divider sx={{ mb: 2 }} />
 
                         {/* SELLER INFO */}

@@ -743,6 +743,35 @@ const banUser = async (user_id) => {
 
     return users;
 }
+const getStats = async () => {
+    var numUsers = 0;
+    var numReports = 0;
+    var numProducts = 0;
+    var numProductsSold = 0;
+    var stats = {};
+    let context = undefined;
+    try {
+        // Initialize the database
+        context = await db.initDatabase(env.DB_URI);
+
+        numUsers = await db.countDocuments(context,DATABASE_NAME,USER_COLLECTION,{ userType: { $in: ["personal", "business"] } });
+        numReports = await db.countDocuments(context,DATABASE_NAME,REPORT_COLLECTION,{});
+        numProducts = await db.countDocuments(context,DATABASE_NAME,PRODUCT_COLLECTION,{});
+        numProductsSold = await db.countDocuments(context,DATABASE_NAME,PRODUCT_COLLECTION,{status: "sold"});
+    }
+    catch (e) {
+        console.error(e);
+    }
+    finally {
+        context?.close();
+        stats.numUsers = numUsers;
+        stats.numReports = numReports;
+        stats.numProducts = numProducts;
+        stats.numProductsSold = numProductsSold;
+    }
+
+    return users;
+}
 export {
     DATABASE_NAME,
     IMAGE_COLLECTION,
@@ -777,5 +806,6 @@ export {
     addReport,
     retrieveUserReports,
     retrieveReportedUsers,
-    banUser
+    banUser,
+    getStats
 };

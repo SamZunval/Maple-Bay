@@ -51,6 +51,9 @@ const updateDocument = (context, database, collection, criteria,  change) => {
 const updateDocuments = (context, database, collection, criteria,  change) => {
     return context.db(database).collection(collection).updateMany(criteria, change);
 }
+const countDocuments = (context, database, collection, criteria) => {
+    return context.db(database).collection(collection).countDocuments(criteria);
+}
 export {
     initDatabase,
     insertDocument,
@@ -63,5 +66,6 @@ export {
     replaceDocument,
     updateDocument,
     deleteDocuments,
-    updateDocuments
+    updateDocuments,
+    countDocuments
 };

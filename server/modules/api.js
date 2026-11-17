@@ -33,7 +33,7 @@ import {  retrieveUsers,
     addReport,
     retrieveUserReports,
     retrieveReportedUsers,
-    banUser} from './data.js';
+    banUser,getStats} from './data.js';
 
 import * as colors from "./colors.js";
 import * as data from "./messager.js";
@@ -302,6 +302,10 @@ app.get('/reports/:what', async (_request, response) => {
     const email = _request.params.what;
     let reviews = await retrieveUserReports(email);
     response.json(reviews);
+});
+app.get('/stats', async (_request, response) => {
+    let stats = await getStats();
+    response.json(stats);
 });
 /*
 app.get('/bookmark', function (req, res) {//handles routing for the client

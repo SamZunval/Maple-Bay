@@ -12,6 +12,14 @@ const headers = {
 
 const serverRoute = (route) => `${API_IP}:${API_PORT}/${route}`;
 const stats = {
+    getStats: async () => {
+        let response = await fetch(serverRoute('/stats'), {
+            headers,
+            method: 'GET'
+        });
+        let data = await response.json();
+        return data;
+    },
 }
 const users = {
     getUsers: async () => {
@@ -97,9 +105,6 @@ const users = {
 
         return response;
     },
-}
-const surveys = {
-    
 }
 const images = {
     postImage: async (image) => {
@@ -303,7 +308,6 @@ const report = {
 export {
     users,
     images,
-    surveys,
     stats,
     products,
     chatroom,

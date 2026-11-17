@@ -26,10 +26,12 @@ import {
   ToggleButton,
   Rating,
   Fade,
+  Tooltip
 } from "@mui/material";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
-
+import FlagIcon from '@mui/icons-material/Flag';
+import ReportPage from "../components/ReportPage";
 import { useLocation, useNavigate } from "react-router-dom";
 import { IconButton, InputAdornment } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
@@ -60,6 +62,15 @@ const formatPrice = (price) => {
 };
 
 const Profile = () => {
+  // Variable to keep track of report page state 
+  const [reportopen, setReportOpen] = useState(false);
+  const handleReportClickOpen = () => {
+        setReportOpen(true);
+    };
+
+    const handleReportClose = () => {
+        setReportOpen(false);
+    };
   {
     /* Rudy code */
   }
@@ -520,6 +531,20 @@ const Profile = () => {
               ? displayedUser?.businessName ||
                 `${displayedUser?.firstName || ""} ${displayedUser?.lastName || ""}`.trim()
               : businessName || `${firstName} ${lastName}`}
+            {isPublicProfile && (
+              <Tooltip title="Report Product">
+                            <IconButton onClick={handleReportClickOpen} color="error">
+                                <FlagIcon />
+                            </IconButton>
+                            <ReportPage
+                                open={reportopen}
+                                onClose={handleReportClose}
+                                reviewer={JSON.parse(sessionStorage.getItem("userInfo") || "null").email}
+                                reviewee={profileEmail}
+                                product={""}
+                            />
+                            </Tooltip>
+           )}
           </Typography>
 
           {/*Additional text */}
