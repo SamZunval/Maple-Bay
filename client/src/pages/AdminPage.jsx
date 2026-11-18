@@ -37,6 +37,15 @@ const AdminPage = () => {
     };
     const handleBan = async () => {
         await report.banUser(selectedUser);
+        var data = await report.getReportedUsers();
+        //reload page
+        setUserList(data);
+        setIsDisabled(true);
+        setSelectedUser("");
+        setReportList([]);
+        setSelectedReport("");
+        setSelectedProduct({});
+        setUser({});
     }
 
     useEffect(() => {
@@ -92,7 +101,7 @@ const AdminPage = () => {
         alignItems: "center",
         }}>
         {statistics.map((stat, index) => (
-          <Grid item xs={6} md={3} key={index}>
+          <Grid  key={index}>
             <Box sx={{ textAlign: "center", p: 1 }}>
               <Typography
                 variant="h4"
@@ -140,6 +149,10 @@ const AdminPage = () => {
                         label="Reported User"
                         name="reportedUser"
                         value={selectedUser}
+                        slotProps={{//fixes weird react labeling bug about not targetting an id
+                            input: { id: "my-select-input" },
+                            inputLabel: { htmlFor: "my-select-input" },
+                        }}
                         onChange={async (e) => {setSelectedUser(e.target.value);await fetchReports(e.target.value)}}
                     >
                         {userList.map((reason) => (
@@ -157,6 +170,10 @@ const AdminPage = () => {
                         label="User Reports"
                         name="reports"
                         value={selectedReport}
+                        slotProps={{//fixes weird react labeling bug about not targetting an id
+                            input: { id: "my-select-inpu2" },
+                            inputLabel: { htmlFor: "my-select-inpu2" },
+                        }}
                         onChange={async (e) => {
                             setSelectedReport(e.target.value);
                             if(e.target.value != ""){

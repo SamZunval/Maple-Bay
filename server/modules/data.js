@@ -148,7 +148,10 @@ const loginUser = async (userName, password) => {
       {},
     );
     if (user.banned) {
-      //dont allow login
+      //if banned only return banned status
+      user = {};
+      user.banned = true;
+      return user;
     } else if (
       user &&
       user != {} &&
@@ -334,19 +337,11 @@ const addProduct = async (prod) => {
   try {
     // Initialize the database
     context = await db.initDatabase(env.DB_URI);
-
-    //Left over if else statement.
-    //You could only add one product per user because of this statement
-    // let found = await db.findDocument(context, DATABASE_NAME, PRODUCT_COLLECTION, {user : prod.user}, {});
-    // if(found == null){
-    //     let result = await db.insertDocument(context, DATABASE_NAME, PRODUCT_COLLECTION, prod);
-    //     return true;
-    // }
-    // else {
-    //     return false;
-    // }
-    //console.log(`${result.insertedCount} user loaded into ${USER_COLLECTION}`);
-
+    //ensure user not banned
+    var user = await getUserByEmail(prod.sellerEmail);
+    if("banned" in user){
+        return false;
+    }
     let result = await db.insertDocument(
       context,
       DATABASE_NAME,
@@ -914,15 +909,15 @@ const banUser = async (user_id) => {
       context,
       DATABASE_NAME,
       USER_COLLECTION,
-      { userName: user_id },
-      { banned: true },
+      { email: user_id },
+      { $set: { banned: true }},
     );
     await db.updateDocuments(
       context,
       DATABASE_NAME,
       PRODUCT_COLLECTION,
-      { user: user_id },
-      { banned: true },
+      { sellerEmail: user_id },
+      { $set: { banned: true }},
     );
   } catch (e) {
     console.error(e);
