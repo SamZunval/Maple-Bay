@@ -1,7 +1,7 @@
-import env from './env.js';
-import * as db from './db.js'
+import env from "./env.js";
+import * as db from "./db.js";
 import * as fs from "node:fs/promises";
-import { ObjectId } from 'mongodb';
+import { ObjectId } from "mongodb";
 const DATABASE_NAME = "MapleStorage";
 const IMAGE_COLLECTION = "Images";
 const USER_COLLECTION = "Users";
@@ -9,806 +9,1011 @@ const PRODUCT_COLLECTION = "Products";
 const CHATGROUP_COLLECTION = "ChatGroups";
 const REVIEW_COLLECTION = "Reviews";
 const REPORT_COLLECTION = "Reports";
-import crypto from 'node:crypto';
+const VERIFICATION_COLLECTION = "VerificationDocuments";
+import crypto from "node:crypto";
 function hashPassword(password, salt) {
-    return new Promise((resolve, reject) => {
-        const iterations = 10000;
-        const keylen = 64;
-        const digest = 'sha512';
+  return new Promise((resolve, reject) => {
+    const iterations = 10000;
+    const keylen = 64;
+    const digest = "sha512";
 
-        crypto.pbkdf2(password, salt, iterations, keylen, digest, (err, key) => {
-            if (err) {
-                reject(err);
-            } else {
-                resolve(key.toString('hex'));
-            }
-        })
+    crypto.pbkdf2(password, salt, iterations, keylen, digest, (err, key) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(key.toString("hex"));
+      }
     });
+  });
 }
 const retrieveUsers = async () => {
-    let users = [];
+  let users = [];
 
-    let context = undefined;
-    try {
-        // Initialize the database
-        context = await db.initDatabase(env.DB_URI);
+  let context = undefined;
+  try {
+    // Initialize the database
+    context = await db.initDatabase(env.DB_URI);
 
-        users = await db.findDocuments(context, DATABASE_NAME, USER_COLLECTION, {}, {});
-    }
-    catch (e) {
-        console.error(e);
-    }
-    finally {
-        context?.close();
-    }
+    users = await db.findDocuments(
+      context,
+      DATABASE_NAME,
+      USER_COLLECTION,
+      {},
+      {},
+    );
+  } catch (e) {
+    console.error(e);
+  } finally {
+    context?.close();
+  }
 
-    return users;
-}
+  return users;
+};
 const retrieveUser = async (user_id) => {
-    let users = [];
+  let users = [];
 
-    let context = undefined;
-    try {
-        // Initialize the database
-        context = await db.initDatabase(env.DB_URI);
+  let context = undefined;
+  try {
+    // Initialize the database
+    context = await db.initDatabase(env.DB_URI);
 
-        //users = await db.findDocuments(context, DATABASE_NAME, USER_COLLECTION, {first_name: user.first_name, last_name: user.last_name}, {});
-        users = await db.findDocument(context, DATABASE_NAME, USER_COLLECTION, {_id : new ObjectId(user_id)}, {});
-    }
-    catch (e) {
-        console.error(e);
-    }
-    finally {
-        context?.close();
-    }
+    //users = await db.findDocuments(context, DATABASE_NAME, USER_COLLECTION, {first_name: user.first_name, last_name: user.last_name}, {});
+    users = await db.findDocument(
+      context,
+      DATABASE_NAME,
+      USER_COLLECTION,
+      { _id: new ObjectId(user_id) },
+      {},
+    );
+  } catch (e) {
+    console.error(e);
+  } finally {
+    context?.close();
+  }
 
-    return users;
-}
+  return users;
+};
 
 const getUserByEmail = async (user_email) => {
-    let users = [];
+  let users = [];
 
-    let context = undefined;
-    try {
-        // Initialize the database
-        context = await db.initDatabase(env.DB_URI);
+  let context = undefined;
+  try {
+    // Initialize the database
+    context = await db.initDatabase(env.DB_URI);
 
-        //users = await db.findDocuments(context, DATABASE_NAME, USER_COLLECTION, {first_name: user.first_name, last_name: user.last_name}, {});
-        users = await db.findDocument(context, DATABASE_NAME, USER_COLLECTION, {email: user_email}, {});
-    }
-    catch (e) {
-        console.error(e);
-    }
-    finally {
-        context?.close();
-    }
+    //users = await db.findDocuments(context, DATABASE_NAME, USER_COLLECTION, {first_name: user.first_name, last_name: user.last_name}, {});
+    users = await db.findDocument(
+      context,
+      DATABASE_NAME,
+      USER_COLLECTION,
+      { email: user_email },
+      {},
+    );
+  } catch (e) {
+    console.error(e);
+  } finally {
+    context?.close();
+  }
 
-    return users;
-}
+  return users;
+};
 
 const blockUser = async (user_id, user2_id) => {
-    let users = [];
+  let users = [];
 
-    let context = undefined;
-    try {
-        // Initialize the database
-        context = await db.initDatabase(env.DB_URI);
+  let context = undefined;
+  try {
+    // Initialize the database
+    context = await db.initDatabase(env.DB_URI);
 
-        //add like in both entries
-        users = await db.updateDocument(context, DATABASE_NAME, USER_COLLECTION, {userName : user_id}, { $push: {blocks: user2_id} });
-        users = await db.updateDocument(context, DATABASE_NAME, USER_COLLECTION, {userName : user2_id}, { $push: {blocked: user_id} });
-    }
-    catch (e) {
-        console.error(e);
-    }
-    finally {
-        context?.close();
-    }
+    //add like in both entries
+    users = await db.updateDocument(
+      context,
+      DATABASE_NAME,
+      USER_COLLECTION,
+      { userName: user_id },
+      { $push: { blocks: user2_id } },
+    );
+    users = await db.updateDocument(
+      context,
+      DATABASE_NAME,
+      USER_COLLECTION,
+      { userName: user2_id },
+      { $push: { blocked: user_id } },
+    );
+  } catch (e) {
+    console.error(e);
+  } finally {
+    context?.close();
+  }
 
-    return users;
-}
+  return users;
+};
 const loginUser = async (userName, password) => {
-    let user = {};
-    let loggedIn = {};
+  let user = {};
+  let loggedIn = {};
 
-    let context = undefined;
-    try {
-        // Initialize the database
-        context = await db.initDatabase(env.DB_URI);
+  let context = undefined;
+  try {
+    // Initialize the database
+    context = await db.initDatabase(env.DB_URI);
 
-        //add like in both entries
-        user = await db.findDocument(context, DATABASE_NAME, USER_COLLECTION, {email : userName}, {});
-        if(user.banned){
-            //dont allow login
-        }
-        else if(user && user != {} && user != [] && Object.keys(user).length != 0){
-            var derivedKey = await hashPassword(password,user.salt)
-            if(derivedKey == user.hash){
-                loggedIn = user;
-            }
-        }
+    //add like in both entries
+    user = await db.findDocument(
+      context,
+      DATABASE_NAME,
+      USER_COLLECTION,
+      { email: userName },
+      {},
+    );
+    if (user.banned) {
+      //dont allow login
+    } else if (
+      user &&
+      user != {} &&
+      user != [] &&
+      Object.keys(user).length != 0
+    ) {
+      var derivedKey = await hashPassword(password, user.salt);
+      if (derivedKey == user.hash) {
+        loggedIn = user;
+      }
     }
-    catch (e) {
-        console.error(e);
-    }
-    finally {
-        context?.close();
-    }
+  } catch (e) {
+    console.error(e);
+  } finally {
+    context?.close();
+  }
 
-    return loggedIn;
-}
+  return loggedIn;
+};
 const addUser = async (user) => {
+  let context = undefined;
+  try {
+    // Initialize the database
+    context = await db.initDatabase(env.DB_URI);
 
-    let context = undefined;
-    try {
-        // Initialize the database
-        context = await db.initDatabase(env.DB_URI);
-
-        let found = await db.findDocument(context, DATABASE_NAME, USER_COLLECTION, {email: user.email}, {});
-        if(found == null){
-            user.salt = crypto.randomBytes(128).toString('base64');
-            user.hash = await hashPassword(user.password,user.salt);
-            delete user.password;
-            let result = await db.insertDocument(context, DATABASE_NAME, USER_COLLECTION, user);
-            return true;
-        }
-        else {
-            return false;
-        }
-        //console.log(`${result.insertedCount} user loaded into ${USER_COLLECTION}`);
+    let found = await db.findDocument(
+      context,
+      DATABASE_NAME,
+      USER_COLLECTION,
+      { email: user.email },
+      {},
+    );
+    if (found == null) {
+      user.salt = crypto.randomBytes(128).toString("base64");
+      user.hash = await hashPassword(user.password, user.salt);
+      delete user.password;
+      let result = await db.insertDocument(
+        context,
+        DATABASE_NAME,
+        USER_COLLECTION,
+        user,
+      );
+      return true;
+    } else {
+      return false;
     }
-    catch (e) {
-        console.error(e);
-        return false;
-    }
-    finally {
-        context?.close();
-    }
-}
+    //console.log(`${result.insertedCount} user loaded into ${USER_COLLECTION}`);
+  } catch (e) {
+    console.error(e);
+    return false;
+  } finally {
+    context?.close();
+  }
+};
 const removeUser = async (user) => {
+  let context = undefined;
+  try {
+    // Initialize the database
+    context = await db.initDatabase(env.DB_URI);
 
-    let context = undefined;
-    try {
-        // Initialize the database
-        context = await db.initDatabase(env.DB_URI);
-
-        let result = await db.deleteDocument(context, DATABASE_NAME, USER_COLLECTION, {email : user.email});
-        //console.log(`${result.insertedCount} user removed from ${USER_COLLECTION}`);
-    }
-    catch (e) {
-        console.error(e);
-    }
-    finally {
-        context?.close();
-    }
-}
+    let result = await db.deleteDocument(
+      context,
+      DATABASE_NAME,
+      USER_COLLECTION,
+      { email: user.email },
+    );
+    //console.log(`${result.insertedCount} user removed from ${USER_COLLECTION}`);
+  } catch (e) {
+    console.error(e);
+  } finally {
+    context?.close();
+  }
+};
 const updateUser = async (user) => {
+  let context = undefined;
 
-    let context = undefined;
-
-    try {
-        // Initialize the database
-        context = await db.initDatabase(env.DB_URI);
-        user._id = new ObjectId(user._id);
-        let result = await db.replaceDocument(context, DATABASE_NAME, USER_COLLECTION, {email : user.email}, user);
-        //console.log(`${result.insertedCount} user removed from ${USER_COLLECTION}`);
-    }
-    catch (e) {
-        console.error(e);
-    }
-    finally {
-        context?.close();
-    }
-}
+  try {
+    // Initialize the database
+    context = await db.initDatabase(env.DB_URI);
+    user._id = new ObjectId(user._id);
+    let result = await db.replaceDocument(
+      context,
+      DATABASE_NAME,
+      USER_COLLECTION,
+      { email: user.email },
+      user,
+    );
+    //console.log(`${result.insertedCount} user removed from ${USER_COLLECTION}`);
+  } catch (e) {
+    console.error(e);
+  } finally {
+    context?.close();
+  }
+};
 const addImage = async (image) => {
+  let context = undefined;
+  try {
+    // Initialize the database
+    context = await db.initDatabase(env.DB_URI);
 
-    let context = undefined;
-    try {
-        // Initialize the database
-        context = await db.initDatabase(env.DB_URI);
-
-        let result = await db.insertDocument(context, DATABASE_NAME, IMAGE_COLLECTION, image);
-        //console.log(`${result.insertedCount} user loaded into ${USER_COLLECTION}`);
-    }
-    catch (e) {
-        console.error(e);
-    }
-    finally {
-        context?.close();
-    }
-}
+    let result = await db.insertDocument(
+      context,
+      DATABASE_NAME,
+      IMAGE_COLLECTION,
+      image,
+    );
+    //console.log(`${result.insertedCount} user loaded into ${USER_COLLECTION}`);
+  } catch (e) {
+    console.error(e);
+  } finally {
+    context?.close();
+  }
+};
 const removeImage = async (image) => {
+  let context = undefined;
+  try {
+    // Initialize the database
+    context = await db.initDatabase(env.DB_URI);
 
-    let context = undefined;
-    try {
-        // Initialize the database
-        context = await db.initDatabase(env.DB_URI);
-
-        let result = await db.deleteDocument(context, DATABASE_NAME, IMAGE_COLLECTION, {_id: new ObjectId(image)});
-        //console.log(`${result.insertedCount} user removed from ${USER_COLLECTION}`);
-    }
-    catch (e) {
-        console.error(e);
-    }
-    finally {
-        context?.close();
-    }
-}
+    let result = await db.deleteDocument(
+      context,
+      DATABASE_NAME,
+      IMAGE_COLLECTION,
+      { _id: new ObjectId(image) },
+    );
+    //console.log(`${result.insertedCount} user removed from ${USER_COLLECTION}`);
+  } catch (e) {
+    console.error(e);
+  } finally {
+    context?.close();
+  }
+};
 const retrieveImages = async (user) => {
-    let images = [];
+  let images = [];
 
-    let context = undefined;
-    try {
-        // Initialize the database
-        context = await db.initDatabase(env.DB_URI);
+  let context = undefined;
+  try {
+    // Initialize the database
+    context = await db.initDatabase(env.DB_URI);
 
-        images = await db.findDocuments(context, DATABASE_NAME, IMAGE_COLLECTION, {userName: user}, {});
-    }
-    catch (e) {
-        console.error(e);
-    }
-    finally {
-        context?.close();
-    }
+    images = await db.findDocuments(
+      context,
+      DATABASE_NAME,
+      IMAGE_COLLECTION,
+      { userName: user },
+      {},
+    );
+  } catch (e) {
+    console.error(e);
+  } finally {
+    context?.close();
+  }
 
-    return images;
-}
+  return images;
+};
 const retrieveImage = async (data) => {
-    let image = [];
+  let image = [];
 
-    let context = undefined;
-    try {
-        // Initialize the database
-        context = await db.initDatabase(env.DB_URI);
+  let context = undefined;
+  try {
+    // Initialize the database
+    context = await db.initDatabase(env.DB_URI);
 
-        //users = await db.findDocuments(context, DATABASE_NAME, USER_COLLECTION, {first_name: user.first_name, last_name: user.last_name}, {});
-        image = await db.findDocument(context, DATABASE_NAME, USER_COLLECTION, {_id : new ObjectId(data)}, {});
-    }
-    catch (e) {
-        console.error(e);
-    }
-    finally {
-        context?.close();
-    }
+    //users = await db.findDocuments(context, DATABASE_NAME, USER_COLLECTION, {first_name: user.first_name, last_name: user.last_name}, {});
+    image = await db.findDocument(
+      context,
+      DATABASE_NAME,
+      USER_COLLECTION,
+      { _id: new ObjectId(data) },
+      {},
+    );
+  } catch (e) {
+    console.error(e);
+  } finally {
+    context?.close();
+  }
 
-    return image;
-}
+  return image;
+};
 //todo: figure out keys and data for products
 const addProduct = async (prod) => {
+  let context = undefined;
+  try {
+    // Initialize the database
+    context = await db.initDatabase(env.DB_URI);
 
-    let context = undefined;
-    try {
-        // Initialize the database
-        context = await db.initDatabase(env.DB_URI);
+    //Left over if else statement.
+    //You could only add one product per user because of this statement
+    // let found = await db.findDocument(context, DATABASE_NAME, PRODUCT_COLLECTION, {user : prod.user}, {});
+    // if(found == null){
+    //     let result = await db.insertDocument(context, DATABASE_NAME, PRODUCT_COLLECTION, prod);
+    //     return true;
+    // }
+    // else {
+    //     return false;
+    // }
+    //console.log(`${result.insertedCount} user loaded into ${USER_COLLECTION}`);
 
-        //Left over if else statement.
-        //You could only add one product per user because of this statement
-        // let found = await db.findDocument(context, DATABASE_NAME, PRODUCT_COLLECTION, {user : prod.user}, {});
-        // if(found == null){
-        //     let result = await db.insertDocument(context, DATABASE_NAME, PRODUCT_COLLECTION, prod);
-        //     return true;
-        // }
-        // else {
-        //     return false;
-        // }
-        //console.log(`${result.insertedCount} user loaded into ${USER_COLLECTION}`);
-        
-         let result = await db.insertDocument(
-            context,
-            DATABASE_NAME,
-            PRODUCT_COLLECTION,
-            prod
-        );
+    let result = await db.insertDocument(
+      context,
+      DATABASE_NAME,
+      PRODUCT_COLLECTION,
+      prod,
+    );
 
-        return true;
-    }
-    catch (e) {
-        console.error(e);
-        return false;
-    }
-    finally {
-        context?.close();
-    }
-}
+    return true;
+  } catch (e) {
+    console.error(e);
+    return false;
+  } finally {
+    context?.close();
+  }
+};
 const removeProduct = async (prod) => {
+  let context = undefined;
+  try {
+    // Initialize the database
+    context = await db.initDatabase(env.DB_URI);
 
-    let context = undefined;
-    try {
-        // Initialize the database
-        context = await db.initDatabase(env.DB_URI);
-
-        let result = await db.deleteDocument(context, DATABASE_NAME, PRODUCT_COLLECTION, {user : prod.user});
-        //console.log(`${result.insertedCount} user removed from ${USER_COLLECTION}`);
-    }
-    catch (e) {
-        console.error(e);
-    }
-    finally {
-        context?.close();
-    }
-}
+    let result = await db.deleteDocument(
+      context,
+      DATABASE_NAME,
+      PRODUCT_COLLECTION,
+      { user: prod.user },
+    );
+    //console.log(`${result.insertedCount} user removed from ${USER_COLLECTION}`);
+  } catch (e) {
+    console.error(e);
+  } finally {
+    context?.close();
+  }
+};
 const updateProduct = async (prod) => {
-
-    let context = undefined;
-    try {
-        // Initialize the database
-        prod._id = new ObjectId(prod._id);
-        context = await db.initDatabase(env.DB_URI);
-        let result = await db.replaceDocument(context, DATABASE_NAME, PRODUCT_COLLECTION, {_id : prod._id}, prod);
-        //console.log(`${result.insertedCount} user removed from ${USER_COLLECTION}`);
-    }
-    catch (e) {
-        console.error(e);
-    }
-    finally {
-        context?.close();
-    }
-}
+  let context = undefined;
+  try {
+    // Initialize the database
+    prod._id = new ObjectId(prod._id);
+    context = await db.initDatabase(env.DB_URI);
+    let result = await db.replaceDocument(
+      context,
+      DATABASE_NAME,
+      PRODUCT_COLLECTION,
+      { _id: prod._id },
+      prod,
+    );
+    //console.log(`${result.insertedCount} user removed from ${USER_COLLECTION}`);
+  } catch (e) {
+    console.error(e);
+  } finally {
+    context?.close();
+  }
+};
 const retrieveProducts = async () => {
-    let users = [];
+  let users = [];
 
-    let context = undefined;
-    try {
-        // Initialize the database
-        context = await db.initDatabase(env.DB_URI);
+  let context = undefined;
+  try {
+    // Initialize the database
+    context = await db.initDatabase(env.DB_URI);
 
-        users = await db.findDocuments(context, DATABASE_NAME, PRODUCT_COLLECTION, { banned: { $exists: false } }, {});
-    }
-    catch (e) {
-        console.error(e);
-    }
-    finally {
-        context?.close();
-    }
+    users = await db.findDocuments(
+      context,
+      DATABASE_NAME,
+      PRODUCT_COLLECTION,
+      { banned: { $exists: false } },
+      {},
+    );
+  } catch (e) {
+    console.error(e);
+  } finally {
+    context?.close();
+  }
 
-    return users;
-}
+  return users;
+};
 const retrieveUserProducts = async (email) => {
-    let users = [];
+  let users = [];
 
-    let context = undefined;
-    try {
-        // Initialize the database
-        context = await db.initDatabase(env.DB_URI);
+  let context = undefined;
+  try {
+    // Initialize the database
+    context = await db.initDatabase(env.DB_URI);
 
-        users = await db.findDocuments(context, DATABASE_NAME, PRODUCT_COLLECTION, {user: email}, {});
-    }
-    catch (e) {
-        console.error(e);
-    }
-    finally {
-        context?.close();
-    }
+    users = await db.findDocuments(
+      context,
+      DATABASE_NAME,
+      PRODUCT_COLLECTION,
+      { user: email },
+      {},
+    );
+  } catch (e) {
+    console.error(e);
+  } finally {
+    context?.close();
+  }
 
-    return users;
-}
+  return users;
+};
 const retrieveProduct = async (user_id) => {
-    let users = [];
+  let users = [];
 
-    let context = undefined;
-    try {
-        // Initialize the database
-        context = await db.initDatabase(env.DB_URI);
+  let context = undefined;
+  try {
+    // Initialize the database
+    context = await db.initDatabase(env.DB_URI);
 
-        //users = await db.findDocuments(context, DATABASE_NAME, USER_COLLECTION, {first_name: user.first_name, last_name: user.last_name}, {});
-        users = await db.findDocument(context, DATABASE_NAME, PRODUCT_COLLECTION, {_id : new ObjectId(user_id)}, {});
+    //users = await db.findDocuments(context, DATABASE_NAME, USER_COLLECTION, {first_name: user.first_name, last_name: user.last_name}, {});
+    users = await db.findDocument(
+      context,
+      DATABASE_NAME,
+      PRODUCT_COLLECTION,
+      { _id: new ObjectId(user_id) },
+      {},
+    );
+  } catch (e) {
+    console.error(e);
+  } finally {
+    context?.close();
+  }
+
+  return users;
+};
+const newChatRoom = async (buyer, product) => {
+  let roomName = "";
+  let context = undefined;
+  try {
+    // Initialize the database
+    context = await db.initDatabase(env.DB_URI);
+
+    //users = await db.findDocuments(context, DATABASE_NAME, USER_COLLECTION, {first_name: user.first_name, last_name: user.last_name}, {});
+    let found = await db.findDocument(
+      context,
+      DATABASE_NAME,
+      CHATGROUP_COLLECTION,
+      { buyer: buyer.email, product: product._id, seller: product.user },
+      {},
+    );
+    if (found == null) {
+      let ob = await retrieveProduct(product._id);
+      var buy = await getUserByEmail(buyer.email);
+      var sell = await getUserByEmail(product.user);
+      //include buyer and seller names in db to reduce query number
+      var buyerName;
+      var sellerName;
+      if (buy.userType == "personal") {
+        buyerName = buy.firstName;
+      } else {
+        buyerName = buy.businessName;
+      }
+      if (sell.userType == "personal") {
+        sellerName = sell.firstName;
+      } else {
+        sellerName = sell.businessName;
+      }
+
+      roomName = await db.insertDocument(
+        context,
+        DATABASE_NAME,
+        CHATGROUP_COLLECTION,
+        {
+          buyer: buyer.email,
+          buyerName: buyerName,
+          product: product._id,
+          productName: ob.title,
+          seller: product.user,
+          sellerName: sellerName,
+        },
+      );
+      let found = await db.findDocument(
+        context,
+        DATABASE_NAME,
+        CHATGROUP_COLLECTION,
+        { buyer: buyer.email, product: product._id, seller: product.user },
+        {},
+      );
+      roomName = found._id;
+    } else {
+      roomName = found._id;
     }
-    catch (e) {
-        console.error(e);
+  } catch (e) {
+    console.error(e);
+  } finally {
+    context?.close();
+  }
+
+  return roomName;
+};
+const getFancyRoomname = (user, object) => {
+  var otherUser;
+  if (user == object.buyer) {
+    otherUser = object.sellerName;
+  } else {
+    otherUser = object.buyerName;
+  }
+  return otherUser + " - " + object.productName;
+};
+
+const getUserChatRooms = async (user) => {
+  let roomNames = [];
+  let context = undefined;
+  try {
+    // Initialize the database
+    context = await db.initDatabase(env.DB_URI);
+
+    //users = await db.findDocuments(context, DATABASE_NAME, USER_COLLECTION, {first_name: user.first_name, last_name: user.last_name}, {});
+    roomNames = await db.findDocuments(
+      context,
+      DATABASE_NAME,
+      CHATGROUP_COLLECTION,
+      { $or: [{ buyer: user }, { seller: user }] },
+      {},
+    );
+    for (var room of roomNames) {
+      room.roomName = getFancyRoomname(user, room);
     }
-    finally {
-        context?.close();
+  } catch (e) {
+    console.error(e);
+  } finally {
+    context?.close();
+  }
+
+  return roomNames;
+};
+const updateLeftRoom = async (room, user) => {
+  let context = undefined;
+  try {
+    // Initialize the database
+    context = await db.initDatabase(env.DB_URI);
+
+    let found = await db.findDocument(
+      context,
+      DATABASE_NAME,
+      CHATGROUP_COLLECTION,
+      { _id: new ObjectId(room) },
+      {},
+    );
+    if (found.buyer == user) {
+      found.buyerLogoff = Date.now();
+    } else {
+      found.sellerLogoff = Date.now();
     }
+    let result = await db.replaceDocument(
+      context,
+      DATABASE_NAME,
+      CHATGROUP_COLLECTION,
+      { _id: new ObjectId(room) },
+      found,
+    );
+  } catch (e) {
+    console.error(e);
+  } finally {
+    context?.close();
+  }
+};
+const updateJoinRoom = async (room, user) => {
+  let context = undefined;
+  try {
+    // Initialize the database
+    context = await db.initDatabase(env.DB_URI);
+    let found = await db.findDocument(
+      context,
+      DATABASE_NAME,
+      CHATGROUP_COLLECTION,
+      { _id: new ObjectId(room) },
+      {},
+    );
+    if (found.buyer == user) {
+      found.buyerLogoff = null;
+    } else {
+      found.sellerLogoff = null;
+    }
+    let result = await db.replaceDocument(
+      context,
+      DATABASE_NAME,
+      CHATGROUP_COLLECTION,
+      { _id: new ObjectId(room) },
+      found,
+    );
+  } catch (e) {
+    console.error(e);
+  } finally {
+    context?.close();
+  }
+};
+const updateMessageSent = async (room, user) => {
+  let context = undefined;
+  try {
+    // Initialize the database
+    context = await db.initDatabase(env.DB_URI);
+    let found = await db.findDocument(
+      context,
+      DATABASE_NAME,
+      CHATGROUP_COLLECTION,
+      { _id: new ObjectId(room) },
+      {},
+    );
+    if (found.buyer == user) {
+      found.buyerMessage = Date.now();
+    } else {
+      found.sellerMessage = Date.now();
+    }
+    let result = await db.replaceDocument(
+      context,
+      DATABASE_NAME,
+      CHATGROUP_COLLECTION,
+      { _id: new ObjectId(room) },
+      found,
+    );
+  } catch (e) {
+    console.error(e);
+  } finally {
+    context?.close();
+  }
+};
+const getUnreadMessages = async (email) => {
+  let num = 0;
+  let context = undefined;
+  try {
+    // Initialize the database
+    context = await db.initDatabase(env.DB_URI);
 
-    return users;
-}
-const newChatRoom = async(buyer, product) =>{
-    let roomName = '';
-    let context = undefined;
-    try {
-        // Initialize the database
-        context = await db.initDatabase(env.DB_URI);
-
-        //users = await db.findDocuments(context, DATABASE_NAME, USER_COLLECTION, {first_name: user.first_name, last_name: user.last_name}, {});
-        let found = await db.findDocument(context, DATABASE_NAME, CHATGROUP_COLLECTION, {buyer: buyer.email, product: product._id, seller: product.user}, {});
-        if(found == null){
-            let ob = await retrieveProduct(product._id);
-            var buy = await getUserByEmail(buyer.email);
-            var sell = await getUserByEmail(product.user);
-            //include buyer and seller names in db to reduce query number
-            var buyerName;
-            var sellerName;
-            if(buy.userType == "personal"){
-                buyerName = buy.firstName;
-            }
-            else {
-                buyerName = buy.businessName;
-            }
-            if(sell.userType == "personal"){
-                sellerName = sell.firstName;
-            }
-            else {
-                sellerName = sell.businessName;
-            }
-
-            roomName = await db.insertDocument(context, DATABASE_NAME, CHATGROUP_COLLECTION, {buyer: buyer.email,buyerName: buyerName, product: product._id,productName: ob.title, seller: product.user,sellerName: sellerName});
-            let found = await db.findDocument(context, DATABASE_NAME, CHATGROUP_COLLECTION, {buyer: buyer.email, product: product._id, seller: product.user}, {});
-            roomName = found._id;
+    //users = await db.findDocuments(context, DATABASE_NAME, USER_COLLECTION, {first_name: user.first_name, last_name: user.last_name}, {});
+    let rooms = await db.findDocuments(
+      context,
+      DATABASE_NAME,
+      CHATGROUP_COLLECTION,
+      { $or: [{ buyer: email }, { seller: email }] },
+      {},
+    );
+    if (rooms != null) {
+      rooms.forEach((element) => {
+        if (
+          element.buyer == email &&
+          Object.hasOwn(element, "sellerMessage") &&
+          !Object.hasOwn(element, "buyerLogoff")
+        ) {
+          num++;
+        } else if (
+          element.buyer == email &&
+          element.buyerLogoff != null &&
+          element.sellerMessage > element.buyerLogoff
+        ) {
+          num++;
+        } else if (
+          element.seller == email &&
+          Object.hasOwn(element, "buyerMessage") &&
+          !Object.hasOwn(element, "sellerLogoff")
+        ) {
+          num++;
+        } else if (
+          element.seller == email &&
+          element.sellerLogoff != null &&
+          element.buyerMessage > element.sellerLogoff
+        ) {
+          num++;
         }
-        else {
-            roomName = found._id;
-        }
+      });
     }
-    catch (e) {
-        console.error(e);
-    }
-    finally {
-        context?.close();
-    }
+  } catch (e) {
+    console.error(e);
+  } finally {
+    context?.close();
+  }
 
-    return roomName;
-}
-const getFancyRoomname = (user,object) =>{
-        var otherUser;
-        if(user == object.buyer){
-            otherUser = object.sellerName;
-        }
-        else {
-            otherUser = object.buyerName;
-        }
-        return otherUser + " - " + object.productName;
- } 
-
-const getUserChatRooms = async(user) =>{
-    let roomNames =[];
-    let context = undefined;
-    try {
-        // Initialize the database
-        context = await db.initDatabase(env.DB_URI);
-
-        //users = await db.findDocuments(context, DATABASE_NAME, USER_COLLECTION, {first_name: user.first_name, last_name: user.last_name}, {});
-        roomNames = await db.findDocuments(context, DATABASE_NAME, CHATGROUP_COLLECTION, {$or: [
-        {buyer: user},
-        {seller: user}
-    ]}, {});
-        for (var room of roomNames) {
-            room.roomName = getFancyRoomname(user,room);
-        }
-    }
-    catch (e) {
-        console.error(e);
-    }
-    finally {
-        context?.close();
-    }
-
-    return roomNames;
-}
-const updateLeftRoom = async(room,user) => {
-    let context = undefined;
-    try {
-        // Initialize the database
-        context = await db.initDatabase(env.DB_URI);
-
-    let found = await db.findDocument(context, DATABASE_NAME, CHATGROUP_COLLECTION, {_id: new ObjectId(room)}, {});
-    if(found.buyer == user)
-    {
-        found.buyerLogoff = Date.now();
-    }
-    else 
-    {
-        found.sellerLogoff = Date.now();
-    }
-    let result = await db.replaceDocument(context, DATABASE_NAME, CHATGROUP_COLLECTION, {_id: new ObjectId(room)}, found);
-    }
-    catch (e) {
-        console.error(e);
-    }
-    finally {
-        context?.close();
-    }
-}
-const updateJoinRoom = async(room,user) => {
-    let context = undefined;
-    try {
-        // Initialize the database
-        context = await db.initDatabase(env.DB_URI);
-        let found = await db.findDocument(context, DATABASE_NAME, CHATGROUP_COLLECTION, {_id: new ObjectId(room)}, {});
-    if(found.buyer == user)
-    {
-        found.buyerLogoff = null;
-    }
-    else 
-    {
-        found.sellerLogoff = null;
-    }
-    let result = await db.replaceDocument(context, DATABASE_NAME, CHATGROUP_COLLECTION, {_id: new ObjectId(room)}, found);
-    }
-    catch (e) {
-        console.error(e);
-    }
-    finally {
-        context?.close();
-    }
-}
-const updateMessageSent = async(room,user) => {
-    let context = undefined;
-    try {
-        // Initialize the database
-        context = await db.initDatabase(env.DB_URI);
-    let found = await db.findDocument(context, DATABASE_NAME, CHATGROUP_COLLECTION, {_id: new ObjectId(room)}, {});
-    if(found.buyer == user)
-    {
-        found.buyerMessage = Date.now();
-    }
-    else 
-    {
-        found.sellerMessage = Date.now();
-    }
-    let result = await db.replaceDocument(context, DATABASE_NAME, CHATGROUP_COLLECTION, {_id: new ObjectId(room)}, found);
-    }
-    catch (e) {
-        console.error(e);
-    }
-    finally {
-        context?.close();
-    }
-}
-const getUnreadMessages = async(email) =>{
-    let num =0;
-    let context = undefined;
-    try {
-        // Initialize the database
-        context = await db.initDatabase(env.DB_URI);
-
-        //users = await db.findDocuments(context, DATABASE_NAME, USER_COLLECTION, {first_name: user.first_name, last_name: user.last_name}, {});
-        let rooms = await db.findDocuments(context, DATABASE_NAME, CHATGROUP_COLLECTION, {$or: [
-        {buyer: email},
-        {seller: email}
-    ]}, {});
-        if(rooms != null){
-            rooms.forEach(element => {
-            if(element.buyer == email && Object.hasOwn(element, 'sellerMessage') && !Object.hasOwn(element, 'buyerLogoff')){
-                num++;
-            }
-            else if(element.buyer == email && element.buyerLogoff != null && element.sellerMessage > element.buyerLogoff){
-                num++;
-            }
-            else if(element.seller == email && Object.hasOwn(element, 'buyerMessage') && !Object.hasOwn(element, 'sellerLogoff')){
-                num++;
-            }
-            else if(element.seller == email && element.sellerLogoff != null && element.buyerMessage > element.sellerLogoff){
-                num++;
-            }
-        });
-        }        
-    }
-    catch (e) {
-        console.error(e);
-    }
-    finally {
-        context?.close();
-    }
-
-    return num;
-}
+  return num;
+};
 const addReview = async (review) => {
+  let context = undefined;
+  try {
+    // Initialize the database
+    context = await db.initDatabase(env.DB_URI);
 
-    let context = undefined;
-    try {
-        // Initialize the database
-        context = await db.initDatabase(env.DB_URI);
-
-        let found = await db.findDocument(context, DATABASE_NAME, REVIEW_COLLECTION, {reviewer: review.reviewer, reviewee: review.reviewee,product: review.product}, {});
-        if(found == null){
-            //never reviewed this product before
-            let result = await db.insertDocument(context, DATABASE_NAME, REVIEW_COLLECTION, review);
-        }
-        else {
-            //update review
-            review._id = found._id;
-            await updateReview(review);
-        }
-        return true;
+    let found = await db.findDocument(
+      context,
+      DATABASE_NAME,
+      REVIEW_COLLECTION,
+      {
+        reviewer: review.reviewer,
+        reviewee: review.reviewee,
+        product: review.product,
+      },
+      {},
+    );
+    if (found == null) {
+      //never reviewed this product before
+      let result = await db.insertDocument(
+        context,
+        DATABASE_NAME,
+        REVIEW_COLLECTION,
+        review,
+      );
+    } else {
+      //update review
+      review._id = found._id;
+      await updateReview(review);
     }
-    catch (e) {
-        console.error(e);
-        return false;
-    }
-    finally {
-        context?.close();
-    }
-}
+    return true;
+  } catch (e) {
+    console.error(e);
+    return false;
+  } finally {
+    context?.close();
+  }
+};
 const updateReview = async (review) => {
-
-    let context = undefined;
-    try {
-        // Initialize the database
-        review._id = new ObjectId(review._id);
-        context = await db.initDatabase(env.DB_URI);
-        let result = await db.replaceDocument(context, DATABASE_NAME, REVIEW_COLLECTION, {_id : review._id}, review);
-    }
-    catch (e) {
-        console.error(e);
-    }
-    finally {
-        context?.close();
-    }
-}
+  let context = undefined;
+  try {
+    // Initialize the database
+    review._id = new ObjectId(review._id);
+    context = await db.initDatabase(env.DB_URI);
+    let result = await db.replaceDocument(
+      context,
+      DATABASE_NAME,
+      REVIEW_COLLECTION,
+      { _id: review._id },
+      review,
+    );
+  } catch (e) {
+    console.error(e);
+  } finally {
+    context?.close();
+  }
+};
 const retrieveUserReviews = async (email, byReviewer = false) => {
-    let reviews = [];
+  let reviews = [];
 
-    let context = undefined;
-    try {
-        // Initialize the database
-        context = await db.initDatabase(env.DB_URI);
+  let context = undefined;
+  try {
+    // Initialize the database
+    context = await db.initDatabase(env.DB_URI);
 
-        reviews = await db.findDocuments(context, DATABASE_NAME, REVIEW_COLLECTION, {
-            [byReviewer ? "reviewer" : "reviewee"]: email
-        }, {});
-    }
-    catch (e) {
-        console.error(e);
-    }
-    finally {
-        context?.close();
-    }
+    reviews = await db.findDocuments(
+      context,
+      DATABASE_NAME,
+      REVIEW_COLLECTION,
+      {
+        [byReviewer ? "reviewer" : "reviewee"]: email,
+      },
+      {},
+    );
+  } catch (e) {
+    console.error(e);
+  } finally {
+    context?.close();
+  }
 
-    return reviews;
-}
+  return reviews;
+};
+
+const addVerificationDocument = async (verification) => {
+  let context = undefined;
+
+  try {
+    context = await db.initDatabase(env.DB_URI);
+    const result = await db.insertDocument(
+      context,
+      DATABASE_NAME,
+      VERIFICATION_COLLECTION,
+      {
+        userId: new ObjectId(verification.userId),
+        documentType: verification.documentType,
+        imageData: verification.imageData,
+        status: "approved",
+        submittedAt: new Date(),
+      },
+    );
+    return result.acknowledged;
+  } catch (e) {
+    console.error(e);
+    return false;
+  } finally {
+    context?.close();
+  }
+};
 
 const addReport = async (review) => {
-
-    let context = undefined;
-    try {
-        // Initialize the database
-        context = await db.initDatabase(env.DB_URI);
-        var user = await getUserByEmail(review.reviewee);
-        //set number of times user has been reported
-        if('reported' in user){
-            user.reported++;
-        }
-        else {
-            user.reported = 1;
-        }
-        await updateUser(user);
-        let result = await db.insertDocument(context, DATABASE_NAME, REPORT_COLLECTION, review);
-        return true;
+  let context = undefined;
+  try {
+    // Initialize the database
+    context = await db.initDatabase(env.DB_URI);
+    var user = await getUserByEmail(review.reviewee);
+    //set number of times user has been reported
+    if ("reported" in user) {
+      user.reported++;
+    } else {
+      user.reported = 1;
     }
-    catch (e) {
-        console.error(e);
-        return false;
-    }
-    finally {
-        context?.close();
-    }
-}
+    await updateUser(user);
+    let result = await db.insertDocument(
+      context,
+      DATABASE_NAME,
+      REPORT_COLLECTION,
+      review,
+    );
+    return true;
+  } catch (e) {
+    console.error(e);
+    return false;
+  } finally {
+    context?.close();
+  }
+};
 
 const retrieveUserReports = async (email) => {
-    let reviews = [];
+  let reviews = [];
 
-    let context = undefined;
-    try {
-        // Initialize the database
-        context = await db.initDatabase(env.DB_URI);
+  let context = undefined;
+  try {
+    // Initialize the database
+    context = await db.initDatabase(env.DB_URI);
 
-        reviews = await db.findDocuments(context, DATABASE_NAME, REPORT_COLLECTION, {
-            "reviewee": email
-        }, {});
-    }
-    catch (e) {
-        console.error(e);
-    }
-    finally {
-        context?.close();
-    }
+    reviews = await db.findDocuments(
+      context,
+      DATABASE_NAME,
+      REPORT_COLLECTION,
+      {
+        reviewee: email,
+      },
+      {},
+    );
+  } catch (e) {
+    console.error(e);
+  } finally {
+    context?.close();
+  }
 
-    return reviews;
-}
+  return reviews;
+};
 
 const retrieveReportedUsers = async () => {
-    let users = [];
+  let users = [];
 
-    let context = undefined;
-    try {
-        // Initialize the database
-        context = await db.initDatabase(env.DB_URI);
+  let context = undefined;
+  try {
+    // Initialize the database
+    context = await db.initDatabase(env.DB_URI);
 
-        users = await db.findDocuments(context, DATABASE_NAME, USER_COLLECTION, {reported: { $gt: 0 },banned: { $exists: false }}, {});
-    }
-    catch (e) {
-        console.error(e);
-    }
-    finally {
-        context?.close();
-    }
+    users = await db.findDocuments(
+      context,
+      DATABASE_NAME,
+      USER_COLLECTION,
+      { reported: { $gt: 0 }, banned: { $exists: false } },
+      {},
+    );
+  } catch (e) {
+    console.error(e);
+  } finally {
+    context?.close();
+  }
 
-    return users;
-}
+  return users;
+};
 const banUser = async (user_id) => {
-    let users = [];
+  let users = [];
 
-    let context = undefined;
-    try {
-        // Initialize the database
-        context = await db.initDatabase(env.DB_URI);
+  let context = undefined;
+  try {
+    // Initialize the database
+    context = await db.initDatabase(env.DB_URI);
 
-        //add banned tag to user and their products
-        users = await db.updateDocument(context, DATABASE_NAME, USER_COLLECTION, {userName : user_id}, {banned: true});
-        await db.updateDocuments(context,DATABASE_NAME,PRODUCT_COLLECTION, {user: user_id},{banned: true});
-    }
-    catch (e) {
-        console.error(e);
-    }
-    finally {
-        context?.close();
-    }
+    //add banned tag to user and their products
+    users = await db.updateDocument(
+      context,
+      DATABASE_NAME,
+      USER_COLLECTION,
+      { userName: user_id },
+      { banned: true },
+    );
+    await db.updateDocuments(
+      context,
+      DATABASE_NAME,
+      PRODUCT_COLLECTION,
+      { user: user_id },
+      { banned: true },
+    );
+  } catch (e) {
+    console.error(e);
+  } finally {
+    context?.close();
+  }
 
-    return users;
-}
+  return users;
+};
 const getStats = async () => {
-    var numUsers = 0;
-    var numReports = 0;
-    var numProducts = 0;
-    var numProductsSold = 0;
-    var stats = {};
-    let context = undefined;
-    try {
-        // Initialize the database
-        context = await db.initDatabase(env.DB_URI);
+  var numUsers = 0;
+  var numReports = 0;
+  var numProducts = 0;
+  var numProductsSold = 0;
+  var stats = {};
+  let context = undefined;
+  try {
+    // Initialize the database
+    context = await db.initDatabase(env.DB_URI);
 
-        numUsers = await db.countDocuments(context,DATABASE_NAME,USER_COLLECTION,{ userType: { $in: ["personal", "business"] } });
-        numReports = await db.countDocuments(context,DATABASE_NAME,REPORT_COLLECTION,{});
-        numProducts = await db.countDocuments(context,DATABASE_NAME,PRODUCT_COLLECTION,{});
-        numProductsSold = await db.countDocuments(context,DATABASE_NAME,PRODUCT_COLLECTION,{status: "sold"});
-    }
-    catch (e) {
-        console.error(e);
-    }
-    finally {
-        context?.close();
-        stats.numUsers = numUsers;
-        stats.numReports = numReports;
-        stats.numProducts = numProducts;
-        stats.numProductsSold = numProductsSold;
-    }
+    numUsers = await db.countDocuments(
+      context,
+      DATABASE_NAME,
+      USER_COLLECTION,
+      { userType: { $in: ["personal", "business"] } },
+    );
+    numReports = await db.countDocuments(
+      context,
+      DATABASE_NAME,
+      REPORT_COLLECTION,
+      {},
+    );
+    numProducts = await db.countDocuments(
+      context,
+      DATABASE_NAME,
+      PRODUCT_COLLECTION,
+      {},
+    );
+    numProductsSold = await db.countDocuments(
+      context,
+      DATABASE_NAME,
+      PRODUCT_COLLECTION,
+      { status: "sold" },
+    );
+  } catch (e) {
+    console.error(e);
+  } finally {
+    context?.close();
+    stats.numUsers = numUsers;
+    stats.numReports = numReports;
+    stats.numProducts = numProducts;
+    stats.numProductsSold = numProductsSold;
+  }
 
-    return stats;
-}
+  return stats;
+};
 export {
-    DATABASE_NAME,
-    IMAGE_COLLECTION,
-    USER_COLLECTION,
-    retrieveUsers,
-    retrieveUser,
-    addUser,
-    removeUser,
-    updateUser,
-    addImage,
-    removeImage,
-    retrieveImages,
-    retrieveImage,
-    loginUser,
-    blockUser,
-    addProduct,
-    removeProduct,
-    updateProduct,
-    retrieveProducts,
-    retrieveProduct,
-    retrieveUserProducts,
-    newChatRoom,
-    getUserChatRooms,
-    updateLeftRoom,
-    updateJoinRoom,
-    updateMessageSent,
-    getUnreadMessages,
-    getUserByEmail,
-    addReview,
-    updateReview,
-    retrieveUserReviews,
-    addReport,
-    retrieveUserReports,
-    retrieveReportedUsers,
-    banUser,
-    getStats
+  DATABASE_NAME,
+  IMAGE_COLLECTION,
+  USER_COLLECTION,
+  retrieveUsers,
+  retrieveUser,
+  addUser,
+  removeUser,
+  updateUser,
+  addImage,
+  removeImage,
+  retrieveImages,
+  retrieveImage,
+  loginUser,
+  blockUser,
+  addProduct,
+  removeProduct,
+  updateProduct,
+  retrieveProducts,
+  retrieveProduct,
+  retrieveUserProducts,
+  newChatRoom,
+  getUserChatRooms,
+  updateLeftRoom,
+  updateJoinRoom,
+  updateMessageSent,
+  getUnreadMessages,
+  getUserByEmail,
+  addReview,
+  updateReview,
+  retrieveUserReviews,
+  addVerificationDocument,
+  addReport,
+  retrieveUserReports,
+  retrieveReportedUsers,
+  banUser,
+  getStats,
 };
