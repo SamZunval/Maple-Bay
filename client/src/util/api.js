@@ -13,7 +13,7 @@ const headers = {
 const serverRoute = (route) => `${API_IP}:${API_PORT}/${route}`;
 const stats = {
     getStats: async () => {
-        let response = await fetch(serverRoute('/stats'), {
+        let response = await fetch(serverRoute('stats'), {
             headers,
             method: 'GET'
         });
@@ -267,7 +267,7 @@ const review = {
 }
 const report = {
     getUserReports: async (email) => {
-        let response = await fetch(serverRoute('/reports/'+email), {
+        let response = await fetch(serverRoute('reports/'+email), {
             headers,
             method: 'GET'
         });
@@ -287,7 +287,7 @@ const report = {
         return response;
     },
     banUser: async (email) => {
-        let response = await fetch(serverRoute("/db/banUser/"+email), {
+        let response = await fetch(serverRoute("db/banUser/"+email), {
             headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json'
@@ -297,7 +297,7 @@ const report = {
         return response;
     },
     getReportedUsers: async () => {
-        let response = await fetch(serverRoute('/reports'), {
+        let response = await fetch(serverRoute('reports'), {
             headers,
             method: 'GET'
         });

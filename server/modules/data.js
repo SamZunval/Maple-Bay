@@ -118,7 +118,10 @@ const loginUser = async (userName, password) => {
 
         //add like in both entries
         user = await db.findDocument(context, DATABASE_NAME, USER_COLLECTION, {email : userName}, {});
-        if(user && user != {} && user != [] && Object.keys(user).length != 0){
+        if(user.banned){
+            //dont allow login
+        }
+        else if(user && user != {} && user != [] && Object.keys(user).length != 0){
             var derivedKey = await hashPassword(password,user.salt)
             if(derivedKey == user.hash){
                 loggedIn = user;
@@ -711,7 +714,7 @@ const retrieveReportedUsers = async () => {
         // Initialize the database
         context = await db.initDatabase(env.DB_URI);
 
-        users = await db.findDocuments(context, DATABASE_NAME, USER_COLLECTION, {reported: { $gt: 0 }}, {});
+        users = await db.findDocuments(context, DATABASE_NAME, USER_COLLECTION, {reported: { $gt: 0 },banned: { $exists: false }}, {});
     }
     catch (e) {
         console.error(e);
@@ -770,7 +773,7 @@ const getStats = async () => {
         stats.numProductsSold = numProductsSold;
     }
 
-    return users;
+    return stats;
 }
 export {
     DATABASE_NAME,

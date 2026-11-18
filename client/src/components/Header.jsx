@@ -61,7 +61,7 @@ const Header = (props) => {
     if (!sessionStorage.getItem("userInfo")) {
       return false;
     }
-    if(JSON.parse(sessionStorage.getItem("userInfo")).member === "Admin"){
+    if(JSON.parse(sessionStorage.getItem("userInfo")).userType === "admin"){
       return true;
     }
     return false
