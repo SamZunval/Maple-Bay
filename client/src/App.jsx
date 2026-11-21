@@ -15,6 +15,9 @@ import Header from "./components/Header.jsx";
 import ChatPage from "./pages/ChatPage.jsx";
 import Purchase from "./pages/Purchase.jsx";
 import AdminPage from "./pages/AdminPage.jsx";
+import Payment from "./pages/Payment.jsx";
+
+
 
 
 
@@ -94,7 +97,7 @@ const theme = createTheme({
         <Route path="/signup" element={<Signup />} />
         <Route path="/profile" element={<ProtectedRoute> <Profile /> </ProtectedRoute>} />
         <Route path="/purchase" element={<ProtectedRoute> <Purchase /> </ProtectedRoute>} />
-
+        <Route path="/payment" element={<ProtectedRoute> <Payment /> </ProtectedRoute>} />
         <Route path="/chat" element={<ProtectedRoute> <ChatPage /> </ProtectedRoute> } />
         <Route path="/add-product" element={<ProtectedRoute><AddProduct /></ProtectedRoute>} />
         <Route path="/Dashboard" element={<ProtectedRoute> <AdminPage /> </ProtectedRoute> } />

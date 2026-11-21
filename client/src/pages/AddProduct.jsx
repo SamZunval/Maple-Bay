@@ -100,8 +100,7 @@ const AddProduct = () => {
                         ? `${userInfo.firstName} ${userInfo.lastName}`
                         : userInfo.businessName,
                 sellerEmail: userInfo.email,
-                listingType,
-
+                listingType: listingType,
             };
             console.log("Submitting product:", newProduct);
 

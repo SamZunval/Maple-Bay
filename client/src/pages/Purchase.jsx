@@ -11,12 +11,14 @@ import
     CircularProgress,
     Tooltip
 } from "@mui/material";
+
 import { useState, useEffect} from "react";
 import { Button, IconButton} from "@mui/material";
 import { products, chatroom } from "../util/api";
 import { users } from "../util/api";
 import FlagIcon from '@mui/icons-material/Flag';
 import ReportPage from "../components/ReportPage";
+
 const Purchase = () => {
     const [reportopen, setReportOpen] = useState(false);
     const location = useLocation();
@@ -66,33 +68,36 @@ const Purchase = () => {
     //console.log("Purchase page received:", product);
 
     const handlePurchase = async () => {
-        if (!userInfo?.email) {
-            setError("Please log in to purchase this item.");
-            return;
-        }
 
-        setPurchasing(true);
-        setError("");
+        navigate("/payment", { state: { product } });
 
-        try {
-            const updatedProduct = {
-                ...product,
-                status: "awaiting-shipment",
-                buyerEmail: userInfo.email,
-            };
+        // if (!userInfo?.email) {
+        //     setError("Please log in to purchase this item.");
+        //     return;
+        // }
 
-            const response = await products.updateProduct(updatedProduct);
+        // setPurchasing(true);
+        // setError("");
 
-            if (!response.ok) {
-                throw new Error("Failed to purchase this item.");
-            }
+        // try {
+        //     const updatedProduct = {
+        //         ...product,
+        //         status: "awaiting-shipment",
+        //         buyerEmail: userInfo.email,
+        //     };
 
-            navigate("/", { replace: true });
-        } catch (err) {
-            setError(err.message || "An error occurred while purchasing.");
-        } finally {
-            setPurchasing(false);
-        }
+        //     const response = await products.updateProduct(updatedProduct);
+
+        //     if (!response.ok) {
+        //         throw new Error("Failed to purchase this item.");
+        //     }
+
+        //     navigate("/", { replace: true });
+        // } catch (err) {
+        //     setError(err.message || "An error occurred while purchasing.");
+        // } finally {
+        //     setPurchasing(false);
+        // }
     };
 
     const handleChat = async () => {
@@ -190,8 +195,6 @@ const Purchase = () => {
                         <Divider sx={{ mb: 2 }} />
 
                         {/* SELLER INFO */}
-                        <Divider sx={{ my: 2 }} />
-
                         <Box sx={{ display: "flex", alignItems: "center", gap: 2, py: 1 }}>
                             <Avatar
                                 src={seller?.profileImage || ""}

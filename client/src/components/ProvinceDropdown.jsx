@@ -1,4 +1,5 @@
 import { TextField, MenuItem } from "@mui/material";
+import { useState } from "react";
 
 const provinces = [
     { name: "Alberta", code: "AB" },
@@ -16,7 +17,10 @@ const provinces = [
     { name: "Yukon", code: "YT" },
 ];
 
-const ProvinceDropdown = ({ value, onChange, required = false , name = "province" }) => {
+
+const ProvinceDropdown = ({ value, onChange, required = false, name = "province" }) => {
+    const [touched, setTouched] = useState(false);
+
     return (
         <TextField
             select
@@ -26,6 +30,9 @@ const ProvinceDropdown = ({ value, onChange, required = false , name = "province
             onChange={onChange}
             required={required}
             name={name}
+            onBlur={() => setTouched(true)}
+            error={required && touched && !value}
+            helperText={required && touched && !value ? "Province is required" : ""}
         >
             <MenuItem value="" disabled>
                 Select a province or territory

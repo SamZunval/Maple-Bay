@@ -42,28 +42,25 @@ function ReportPage(props) {
     backdrop: {
       transitionDuration: { exit: 0 } // Speeds up the DOM teardown
     },
-    paper: {
-          sx: {
-            p: 3, // 24px padding on all sides
-          },
-        },
+    paper: { sx: { p: 3}, },
   }}>
       <DialogTitle sx={{ textAlign: 'center' }}>Report User</DialogTitle>
        <TextField
-                        fullWidth
-                        required
-                        select
-                        label="Report Reason"
-                        name="reason"
-                        value={reason}
-                        onChange={(e) => setReason(e.target.value)}
-                    >
-                        {reasonList.map((reason) => (
-                            <MenuItem key={reason} value={reason}>
-                                {reason}
-                            </MenuItem>
-                        ))}
-                    </TextField>
+          fullWidth
+          required
+          select
+          label="Report Reason"
+          name="reason"
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+          sx={{ mb: "1em" }}
+      >
+          {reasonList.map((reason) => (
+              <MenuItem key={reason} value={reason}>
+                  {reason}
+              </MenuItem>
+          ))}
+      </TextField>
       <TextField fullWidth label="Comments" value={comment} onChange={(e) => setComment(e.target.value)} sx={{ mb: "1em" }}/>
       <Stack justifyContent="space-between" width="100%" direction="row">
         <Button variant="Outlined" onClick={handleClose}>Cancel</Button>

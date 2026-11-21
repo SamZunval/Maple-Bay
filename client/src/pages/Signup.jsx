@@ -23,6 +23,7 @@ import * as api from "../util/api"
 import { useNavigate } from 'react-router-dom'; 
 import personalImage from "../assets/happy.jpg";
 import bussinessImage from "../assets/businessmans.png";
+import ProvinceDropdown from "../components/ProvinceDropdown";
 
 const Register = () => {
 
@@ -39,6 +40,16 @@ const Register = () => {
         userType: "personal",
 
     });
+
+    const [touched, setTouched] = useState({
+        fname:false,
+        lname: false,
+        email: false,
+        password: false,
+        city: false,
+        province: false
+    });
+
     const [image, setImage] = useState(null);   
 
     const [error, setError] = useState("");
@@ -232,15 +243,24 @@ const Register = () => {
                     {uType == "personal" &&
                     <Box sx={{ display: "flex", gap: 2, color: "black" }}>
                         <TextField fullWidth label="First Name" name="firstName" 
+                            onBlur={() => setTouched({ ...touched, firstName: true })}
+                            required
+                            error={touched.firstName && !registerData.firstName.trim()}
                             value={registerData.firstName} onChange={handleChange} sx={{ mb: "1em", color: "black" }} />
 
                         <TextField fullWidth label="Last Name" name="lastName" 
+                            onBlur={() => setTouched({ ...touched, lastName: true })}
+                            required
+                            error={touched.lastName && !registerData.lastName.trim()}
                             value={registerData.lastName} onChange={handleChange} sx={{ mb: "1em" }} />
                     </Box>
                     }
                     {uType == "business" &&
                     <Box sx={{ display: "flex", gap: 2, }}>
                         <TextField fullWidth label="Business Name" name="businessName" 
+                            onBlur={() => setTouched({ ...touched, businessName: true })}
+                            required
+                            error={touched.businessName && !registerData.businessName.trim()}
                             value={registerData.businessName} onChange={handleChange} sx={{ mb: "1em" }} />
                     </Box>
                     }
@@ -248,6 +268,9 @@ const Register = () => {
 
                     <TextField fullWidth label="Password" name="password" type={showPassword ? "text" : "password"}
                         value={registerData.password} onChange={handleChange} 
+                        onBlur={() => setTouched({ ...touched, password: true })}
+                        required
+                        error={touched.password && !registerData.password.trim()}
                         sx={{ mb: "1em" }} 
                         InputProps={{
                             endAdornment: (
@@ -263,14 +286,30 @@ const Register = () => {
                             ),
                         }}/>
                     <TextField fullWidth label="Email" name="email" 
+                            onBlur={() => setTouched({ ...touched, email: true })}
+                            required
+                            error={touched.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(registerData.email)}
                             value={registerData.email} onChange={handleChange} sx={{ mb: "1em" }} />
-                    {/*Location fields */}
 
+                    {/*Location fields */}
                     <Box sx={{ display: "flex", gap: 2, }}>
+
                         <TextField fullWidth label="City" name="city" type="city"
+                            onBlur={() => setTouched({ ...touched, city: true })}
+                            required
+                            error={touched.city && !registerData.city.trim()}
                             value={registerData.city} onChange={handleChange} sx={{ mb: "1em" }} />
-                        <TextField fullWidth label="Province" name="province" type="province"
-                            value={registerData.province} onChange={handleChange} sx={{ mb: "1em" }} />
+
+                         
+                        <ProvinceDropdown
+                            name="province"
+                            value={registerData.province || ''}
+                            onChange={handleChange}
+                            onBlur={() => setTouched({ ...touched, province: true })}
+                            required
+                            
+                            error={touched.province && !registerData.province.trim()}
+                        />
                         
                     </Box>                    
                    

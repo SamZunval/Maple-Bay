@@ -255,10 +255,6 @@ const ProductListings = ({productList, loading, error, currentUserEmail, filterB
 
             const price = valueFor(product, ["price"]);
 
-            const description = valueFor(product, [
-                "description",
-                "details",
-            ]);
 
             const seller =
                 valueFor(product, [
