@@ -37,6 +37,11 @@ const Login = (props) => {
                     console.log("Login failed for user:", userName);
                     return;
                 }
+                if("banned" in loggedInUser){
+                    alert("This account has been banned.");
+                    console.log("Login failed for user:", userName);
+                    return;
+                }
                 sessionStorage.setItem("userInfo", JSON.stringify(loggedInUser));
 
                console.log(`[Login Success] Welcome back, ${loggedInUser.firstName}!`, loggedInUser);

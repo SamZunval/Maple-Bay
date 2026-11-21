@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 //holy shit this is a lot of imports
+//and we will add MORE
 import {
   Paper,
   TextField,
@@ -26,11 +27,14 @@ import {
   ToggleButton,
   Rating,
   Fade,
-  Tooltip
+  Tooltip,
+  Checkbox,
+  FormControlLabel,
 } from "@mui/material";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
-import FlagIcon from '@mui/icons-material/Flag';
+import VerifiedIcon from "@mui/icons-material/Verified";
+import FlagIcon from "@mui/icons-material/Flag";
 import ReportPage from "../components/ReportPage";
 import { useLocation, useNavigate } from "react-router-dom";
 import { IconButton, InputAdornment } from "@mui/material";
@@ -62,15 +66,15 @@ const formatPrice = (price) => {
 };
 
 const Profile = () => {
-  // Variable to keep track of report page state 
+  // Variable to keep track of report page state
   const [reportopen, setReportOpen] = useState(false);
   const handleReportClickOpen = () => {
-        setReportOpen(true);
-    };
+    setReportOpen(true);
+  };
 
-    const handleReportClose = () => {
-        setReportOpen(false);
-    };
+  const handleReportClose = () => {
+    setReportOpen(false);
+  };
   {
     /* Rudy code */
   }
@@ -115,8 +119,9 @@ const Profile = () => {
   const [feedbackLoading, setFeedbackLoading] = useState(true);
   const [profileUser, setProfileUser] = useState(null);
 
-
-  {/*Add product variables */}
+  {
+    /*Add product variables */
+  }
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -127,8 +132,14 @@ const Profile = () => {
 
   {
     /* Edit variables code */
- }
+  }
   const [openEditProfile, setOpenEditProfile] = useState(false);
+  const [openVerification, setOpenVerification] = useState(false);
+  const [verificationDocumentType, setVerificationDocumentType] = useState("");
+  const [verificationConfirmed, setVerificationConfirmed] = useState(false);
+  const [verificationImage, setVerificationImage] = useState("");
+  const [verifyingAccount, setVerifyingAccount] = useState(false);
+  const [verificationError, setVerificationError] = useState("");
 
   const [registerData, setRegisterData] = useState({
     firstName: "",
@@ -141,7 +152,6 @@ const Profile = () => {
     userType: "personal",
     about: "",
   });
-
 
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -253,7 +263,9 @@ const Profile = () => {
     };
   }, [sellerEmail]);
 
-  const userEmail = String(currentUserEmail || "").trim().toLowerCase();
+  const userEmail = String(currentUserEmail || "")
+    .trim()
+    .toLowerCase();
   const transactionHistory = productList.filter((product) => {
     const status = String(valueFor(product, ["status"]) || "").toLowerCase();
     const buyerEmail = String(valueFor(product, ["buyeremail"]) || "")
@@ -275,7 +287,8 @@ const Profile = () => {
 
     return (
       status === "sold" &&
-      (transactionCategory === "bought" ? buyerEmail : sellerEmail) === userEmail
+      (transactionCategory === "bought" ? buyerEmail : sellerEmail) ===
+        userEmail
     );
   });
 
@@ -300,7 +313,9 @@ const Profile = () => {
         ),
       );
     } catch (err) {
-      setTransactionError(err.message || "Unable to update the shipment status.");
+      setTransactionError(
+        err.message || "Unable to update the shipment status.",
+      );
     }
   };
 
@@ -319,7 +334,9 @@ const Profile = () => {
         }
       } catch (err) {
         if (active) {
-          setTransactionError(err.message || "Unable to refresh shipment status.");
+          setTransactionError(
+            err.message || "Unable to refresh shipment status.",
+          );
         }
       }
     };
@@ -413,9 +430,7 @@ const Profile = () => {
           : savedUser.password,
       profileImage: image,
       email: registerData.email !== "" ? registerData.email : savedUser.email,
-      about: registerData.about !== ""
-        ? registerData.about
-        : savedUser.about,
+      about: registerData.about !== "" ? registerData.about : savedUser.about,
     };
 
     //Many logs for testing
@@ -442,8 +457,6 @@ const Profile = () => {
 
         console.log("Profile updated successfully!");
         window.location.reload();
-
-        
       } else {
         console.log("Failed to update profile on the server.");
       }
@@ -454,12 +467,58 @@ const Profile = () => {
   };
 
   const handleButtonChange = (event, newType) => {
-
     setRegisterData({ ...registerData, ["userType"]: newType });
   };
 
   const handleChange = (e) => {
     setRegisterData({ ...registerData, [e.target.name]: e.target.value });
+  };
+
+  const handleVerifyAccount = async () => {
+    if (
+      !verificationDocumentType ||
+      !verificationConfirmed ||
+      !verificationImage
+    )
+      return;
+
+    setVerificationError("");
+    const verifiedUser = {
+      ...savedUser,
+      accountVerified: true,
+      verificationDocumentType,
+      verificationDate: new Date().toISOString(),
+    };
+
+    setVerifyingAccount(true);
+
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 1800));
+      const documentResponse = await users.submitVerification({
+        userId: savedUser._id,
+        documentType: verificationDocumentType,
+        imageData: verificationImage,
+      });
+      if (!documentResponse.ok) {
+        throw new Error("Unable to save the identity document.");
+      }
+
+      const response = await users.updateUser(verifiedUser);
+      if (response.ok) {
+        sessionStorage.setItem("userInfo", JSON.stringify(verifiedUser));
+        setSavedUser(verifiedUser);
+        setOpenVerification(false);
+        setVerificationConfirmed(false);
+        setVerificationImage("");
+      } else {
+        throw new Error("Unable to update the account verification status.");
+      }
+    } catch (error) {
+      console.error("Error verifying account:", error);
+      setVerificationError(error.message || "Unable to verify the account.");
+    } finally {
+      setVerifyingAccount(false);
+    }
   };
 
   //Begin html
@@ -531,20 +590,50 @@ const Profile = () => {
               ? displayedUser?.businessName ||
                 `${displayedUser?.firstName || ""} ${displayedUser?.lastName || ""}`.trim()
               : businessName || `${firstName} ${lastName}`}
+            {(isPublicProfile
+              ? displayedUser?.accountVerified
+              : savedUser?.accountVerified) && (
+              <Tooltip title="Identity verification completed">
+                <Box
+                  component="span"
+                  sx={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    ml: 0.75,
+                  }}
+                >
+                  <VerifiedIcon
+                    color="primary"
+                    sx={{ verticalAlign: "middle", fontSize: "1.1em" }}
+                  />
+                  <Typography
+                    component="span"
+                    variant="caption"
+                    color="primary"
+                    sx={{ ml: 0.25, fontWeight: 700 }}
+                  >
+                    Verified
+                  </Typography>
+                </Box>
+              </Tooltip>
+            )}
             {isPublicProfile && (
               <Tooltip title="Report Product">
-                            <IconButton onClick={handleReportClickOpen} color="error">
-                                <FlagIcon />
-                            </IconButton>
-                            <ReportPage
-                                open={reportopen}
-                                onClose={handleReportClose}
-                                reviewer={JSON.parse(sessionStorage.getItem("userInfo") || "null").email}
-                                reviewee={profileEmail}
-                                product={""}
-                            />
-                            </Tooltip>
-           )}
+                <IconButton onClick={handleReportClickOpen} color="error">
+                  <FlagIcon />
+                </IconButton>
+                <ReportPage
+                  open={reportopen}
+                  onClose={handleReportClose}
+                  reviewer={
+                    JSON.parse(sessionStorage.getItem("userInfo") || "null")
+                      .email
+                  }
+                  reviewee={profileEmail}
+                  product={""}
+                />
+              </Tooltip>
+            )}
           </Typography>
 
           {/*Additional text */}
@@ -557,23 +646,49 @@ const Profile = () => {
               alignSelf: "center",
             }}
           >
-            {(isPublicProfile ? displayedUser?.userType : userType)?.toLowerCase() === "business" ? "Business" : "Personal"}{" "}
+            {(isPublicProfile
+              ? displayedUser?.userType
+              : userType
+            )?.toLowerCase() === "business"
+              ? "Business"
+              : "Personal"}{" "}
             account
           </Typography>
 
           {/* edit button */}
 
           {!isPublicProfile && (
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => {
-                setOpenEditProfile(true);
+            <Box
+              sx={{
+                gridColumn: 2,
+                gridRow: 3,
+                justifySelf: "end",
+                display: "flex",
+                gap: 1,
               }}
-              sx={{ gridColumn: 2, gridRow: 3, justifySelf: "end", mt: 1 }}
             >
-              ✏️ Edit Profile
-            </Button>
+              {!savedUser?.accountVerified && (
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={() => {
+                    setVerificationError("");
+                    setOpenVerification(true);
+                  }}
+                >
+                  ✅ Verify Account
+                </Button>
+              )}
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => {
+                  setOpenEditProfile(true);
+                }}
+              >
+                ✏️ Edit Profile
+              </Button>
+            </Box>
           )}
         </Box>
       </Paper>
@@ -657,20 +772,26 @@ const Profile = () => {
             maxWidth: "2000px",
             width: "95%",
             mx: "auto",
-          }}>
-            <ProductListings
-                productList={productList}
-                currentUserEmail={profileEmail}
-                loading={loading}
-                error={error}
-                filterByUser={true}
-                showAddButton={!isPublicProfile}
-            />
+          }}
+        >
+          <ProductListings
+            productList={productList}
+            currentUserEmail={profileEmail}
+            loading={loading}
+            error={error}
+            filterByUser={true}
+            showAddButton={!isPublicProfile}
+          />
         </Box>
       </Fade>
 
       {/*Transaction history */}
-      <Fade in={showTransactions && !isPublicProfile} timeout={200} mountOnEnter unmountOnExit>
+      <Fade
+        in={showTransactions && !isPublicProfile}
+        timeout={200}
+        mountOnEnter
+        unmountOnExit
+      >
         <Box
           sx={{
             maxWidth: "2000px",
@@ -746,16 +867,29 @@ const Profile = () => {
                   )}
                   <CardContent>
                     {(() => {
-                      const status = String(valueFor(product, ["status"]) || "").toLowerCase();
+                      const status = String(
+                        valueFor(product, ["status"]) || "",
+                      ).toLowerCase();
                       const sellerEmail = String(
-                        valueFor(product, ["selleremail"]) || valueFor(product, ["user"]) || "",
-                      ).trim().toLowerCase();
+                        valueFor(product, ["selleremail"]) ||
+                          valueFor(product, ["user"]) ||
+                          "",
+                      )
+                        .trim()
+                        .toLowerCase();
                       const isSeller = sellerEmail === userEmail;
 
                       return transactionCategory === "shipping" ? (
                         <>
-                          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                            Shipment status: {status === "shipped" ? "In transit" : "Awaiting shipment"}
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            sx={{ mt: 1 }}
+                          >
+                            Shipment status:{" "}
+                            {status === "shipped"
+                              ? "In transit"
+                              : "Awaiting shipment"}
                           </Typography>
                           {isSeller && status === "awaiting-shipment" && (
                             <Button
@@ -841,82 +975,101 @@ const Profile = () => {
       {/* About Section */}
       <Fade in={showAbout} timeout={200} mountOnEnter unmountOnExit>
         <Box
+          sx={{
+            maxWidth: "2000px",
+            width: "95%",
+            mx: "auto",
+            px: { xs: 2, sm: 3 },
+            py: 4,
+          }}
+        >
+          <Box
             sx={{
-                maxWidth: "2000px",
-                width: "95%",
-                mx: "auto",
-                px: { xs: 2, sm: 3 },
-                py: 4,
+              backgroundColor: "secondary.main",
+              borderRadius: 4,
+              border: "1px solid #eadbea",
+              p: { xs: 3, sm: 4 },
+              boxShadow: "0px 3px 12px rgba(61, 15, 62, 0.06)",
             }}
-          > 
-            <Box
-                sx={{
-                    backgroundColor: "secondary.main",
-                    borderRadius: 4,
-                    border: "1px solid #eadbea",
-                    p: { xs: 3, sm: 4 },
-                    boxShadow: "0px 3px 12px rgba(61, 15, 62, 0.06)",
-                }}
+          >
+            <Typography
+              component="h2"
+              variant="h5"
+              sx={{
+                mb: 3,
+                color: "#3d0f3e",
+                fontWeight: "bold",
+              }}
             >
+              About Me
+            </Typography>
+
+            {/* Biography */}
+            <Box sx={{ mb: 3 }}>
+              <Stack
+                direction="row"
+                alignItems="center"
+                spacing={1}
+                sx={{ mb: 1 }}
+              >
+                <InfoOutlinedIcon sx={{ color: "primary" }} />
                 <Typography
-                    component="h2"
-                    variant="h5"
-                    sx={{
-                        mb: 3,
-                        color: "#3d0f3e",
-                        fontWeight: "bold",
-                    }}
+                  variant="subtitle1"
+                  fontWeight="bold"
+                  color="#3d0f3e"
                 >
-                    About Me
+                  Introduction
                 </Typography>
+              </Stack>
 
-                {/* Biography */}
-                <Box sx={{ mb: 3 }}>
-                    <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
-                        <InfoOutlinedIcon sx={{ color: "primary" }} />
-                        <Typography variant="subtitle1" fontWeight="bold" color="#3d0f3e">
-                            Introduction
-                        </Typography>
-                    </Stack>
-
-                    <Typography
-                        variant="body1"
-                        sx={{
-                            color: "text.secondary",
-                            lineHeight: 1.8,
-                            pl: 4,
-                        }}
-                    >
-                        {(isPublicProfile ? displayedUser?.about : savedUser?.about) ||
-                            "No about information added yet."}
-                    </Typography>
-                </Box>
-
-                <Divider sx={{ borderColor: "#eadbea", my: 2 }} />
-
-                {/* Location */}
-                <Box>
-                    <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
-                        <LocationOnOutlinedIcon sx={{ color: "primary" }} />
-                        <Typography variant="subtitle1" fontWeight="bold" color="#3d0f3e">
-                            Location
-                        </Typography>
-                    </Stack>
-
-                    <Typography
-                        variant="body1"
-                        sx={{ color: "text.secondary", pl: 4 }}
-                    >
-                        {(isPublicProfile ? displayedUser?.province : savedUser?.province) &&
-                        (isPublicProfile ? displayedUser?.city : savedUser?.city)
-                            ? `${isPublicProfile ? displayedUser.city : savedUser.city}, ${isPublicProfile ? displayedUser.province : savedUser.province}`
-                            : "No location information added yet."}
-                    </Typography>
-                </Box>
+              <Typography
+                variant="body1"
+                sx={{
+                  color: "text.secondary",
+                  lineHeight: 1.8,
+                  pl: 4,
+                }}
+              >
+                {(isPublicProfile ? displayedUser?.about : savedUser?.about) ||
+                  "No about information added yet."}
+              </Typography>
             </Box>
+
+            <Divider sx={{ borderColor: "#eadbea", my: 2 }} />
+
+            {/* Location */}
+            <Box>
+              <Stack
+                direction="row"
+                alignItems="center"
+                spacing={1}
+                sx={{ mb: 1 }}
+              >
+                <LocationOnOutlinedIcon sx={{ color: "primary" }} />
+                <Typography
+                  variant="subtitle1"
+                  fontWeight="bold"
+                  color="#3d0f3e"
+                >
+                  Location
+                </Typography>
+              </Stack>
+
+              <Typography
+                variant="body1"
+                sx={{ color: "text.secondary", pl: 4 }}
+              >
+                {(isPublicProfile
+                  ? displayedUser?.province
+                  : savedUser?.province) &&
+                (isPublicProfile ? displayedUser?.city : savedUser?.city)
+                  ? `${isPublicProfile ? displayedUser.city : savedUser.city}, ${isPublicProfile ? displayedUser.province : savedUser.province}`
+                  : "No location information added yet."}
+              </Typography>
+            </Box>
+          </Box>
         </Box>
       </Fade>
-
 
       {/* Feedback Section */}
       <Fade in={showFeedback} timeout={200} mountOnEnter unmountOnExit>
@@ -979,6 +1132,150 @@ const Profile = () => {
 
       <Divider sx={{ width: "95%", my: 3 }} />
 
+      {/*------------------------- Account Verification ------------------------------------------------*/}
+      <Dialog
+        open={!isPublicProfile && openVerification}
+        onClose={() => setOpenVerification(false)}
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogTitle>Verify your account</DialogTitle>
+        <DialogContent>
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{ mt: 1, mb: 2 }}
+          >
+            Complete verification to show buyers that your seller profile is
+            trusted.
+          </Typography>
+          {verificationError && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {verificationError}
+            </Alert>
+          )}
+          <TextField
+            select
+            fullWidth
+            required
+            label="Identity document"
+            value={verificationDocumentType}
+            onChange={(event) =>
+              setVerificationDocumentType(event.target.value)
+            }
+            sx={{ mb: 2 }}
+          >
+            <MenuItem value="Canadian driver's licence">
+              Canadian driver's licence
+            </MenuItem>
+            <MenuItem value="Passport">Passport</MenuItem>
+            <MenuItem value="Provincial ID">Provincial ID</MenuItem>
+          </TextField>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              mb: 2,
+            }}
+          >
+            {verificationImage && (
+              <Box
+                component="img"
+                src={verificationImage}
+                alt="Identity document preview"
+                sx={{
+                  width: "100%",
+                  maxHeight: 220,
+                  objectFit: "contain",
+                  mb: 1,
+                  borderRadius: 1,
+                  bgcolor: "#f5f5f5",
+                }}
+              />
+            )}
+            <Button
+              variant="outlined"
+              component="label"
+              disabled={verifyingAccount}
+            >
+              {verificationImage
+                ? "Replace document"
+                : "Upload identity document"}
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                hidden
+                onChange={(event) => {
+                  const file = event.target.files[0];
+                  if (!file) return;
+                  if (
+                    !["image/jpeg", "image/png", "image/webp"].includes(
+                      file.type,
+                    )
+                  ) {
+                    setVerificationError("Upload a JPG, PNG, or WebP image.");
+                    return;
+                  }
+                  if (file.size > 4 * 1024 * 1024) {
+                    setVerificationError(
+                      "The document image must be 4 MB or smaller.",
+                    );
+                    return;
+                  }
+                  setVerificationError("");
+                  const reader = new FileReader();
+                  reader.onload = () => setVerificationImage(reader.result);
+                  reader.onerror = () =>
+                    setVerificationError("Unable to read the selected image.");
+                  reader.readAsDataURL(file);
+                }}
+              />
+            </Button>
+          </Box>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={verificationConfirmed}
+                onChange={(event) =>
+                  setVerificationConfirmed(event.target.checked)
+                }
+                disabled={verifyingAccount}
+              />
+            }
+            label="I confirm that the information provided is accurate."
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setOpenVerification(false)}
+            color="inherit"
+            disabled={verifyingAccount}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            disabled={
+              !verificationDocumentType ||
+              !verificationConfirmed ||
+              !verificationImage ||
+              verifyingAccount
+            }
+            onClick={handleVerifyAccount}
+          >
+            {verifyingAccount ? (
+              <>
+                <CircularProgress size={18} sx={{ mr: 1 }} />
+                Checking...
+              </>
+            ) : (
+              "Complete verification"
+            )}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       {/*------------------------- Edit Profile Modle ------------------------------------------------*/}
       <Dialog
         open={!isPublicProfile && openEditProfile}
@@ -1035,78 +1332,75 @@ const Profile = () => {
             onChange={handleChange}
             placeholder="Tell people a little about yourself..."
             sx={{ mb: 2 }}
-
           />
 
-          
-        {/* Personal Name Fields */}
-        {userType === "personal" && (
+          {/* Personal Name Fields */}
+          {userType === "personal" && (
+            <Box sx={{ display: "flex", gap: 2 }}>
+              <TextField
+                fullWidth
+                label="First Name"
+                name="firstName"
+                value={registerData.firstName}
+                onChange={handleChange}
+                sx={{ mb: 2 }}
+              />
+
+              <TextField
+                fullWidth
+                label="Last Name"
+                name="lastName"
+                value={registerData.lastName}
+                onChange={handleChange}
+                sx={{ mb: 2 }}
+              />
+            </Box>
+          )}
+
+          {/* Business Name */}
+          {userType === "business" && (
+            <TextField
+              fullWidth
+              label="Business Name"
+              name="businessName"
+              value={registerData.businessName}
+              onChange={handleChange}
+              sx={{ mb: 2 }}
+            />
+          )}
+
+          {/* Email */}
+          <TextField
+            fullWidth
+            label="Email"
+            name="email"
+            type="email"
+            value={registerData.email}
+            onChange={handleChange}
+            sx={{ mb: 2 }}
+          />
+
+          {/* Location Fields */}
           <Box sx={{ display: "flex", gap: 2 }}>
             <TextField
               fullWidth
-              label="First Name"
-              name="firstName"
-              value={registerData.firstName}
+              label="City"
+              name="city"
+              value={registerData.city}
               onChange={handleChange}
               sx={{ mb: 2 }}
             />
 
             <TextField
               fullWidth
-              label="Last Name"
-              name="lastName"
-              value={registerData.lastName}
+              label="Province"
+              name="province"
+              value={registerData.province}
               onChange={handleChange}
               sx={{ mb: 2 }}
             />
           </Box>
-        )}
-
-        {/* Business Name */}
-        {userType === "business" && (
-          <TextField
-            fullWidth
-            label="Business Name"
-            name="businessName"
-            value={registerData.businessName}
-            onChange={handleChange}
-            sx={{ mb: 2 }}
-          />
-        )}
-
-        {/* Email */}
-        <TextField
-          fullWidth
-          label="Email"
-          name="email"
-          type="email"
-          value={registerData.email}
-          onChange={handleChange}
-          sx={{ mb: 2 }}
-        />
-
-        {/* Location Fields */}
-        <Box sx={{ display: "flex", gap: 2 }}>
-          <TextField
-            fullWidth
-            label="City"
-            name="city"
-            value={registerData.city}
-            onChange={handleChange}
-            sx={{ mb: 2 }}
-          />
-
-          <TextField
-            fullWidth
-            label="Province"
-            name="province"
-            value={registerData.province}
-            onChange={handleChange}
-            sx={{ mb: 2 }}
-          />
-        </Box>
         </DialogContent>
-
 
         <DialogActions>
           <Button onClick={() => setOpenEditProfile(false)} color="inherit">
@@ -1124,7 +1418,6 @@ const Profile = () => {
           </Button>
         </DialogActions>
       </Dialog>
-
     </Box>
   );
 };

@@ -57,6 +57,15 @@ const AdminPage = () => {
     };
     const handleBan = async () => {
         await report.banUser(selectedUser);
+        var data = await report.getReportedUsers();
+        //reload page
+        setUserList(data);
+        setIsDisabled(true);
+        setSelectedUser("");
+        setReportList([]);
+        setSelectedReport("");
+        setSelectedProduct({});
+        setUser({});
     }
 
     useEffect(() => {
@@ -112,26 +121,20 @@ return (
         </Typography>
 
         <Divider sx={{ mb: 2 }} />
-
-        <Grid
-            container
-            spacing={3}
-            sx={{
-                justifyContent: "center",
-                alignItems: "center",
-            }}
-        >
-            {/* STATS */}
-            {statistics.map((stat, index) => (
-                <Grid item xs={6} md={3} key={index}>
-                    <Box sx={{ textAlign: "center", p: 1 }}>
-                        <Typography
-                            variant="h4"
-                            fontWeight="bold"
-                            color="primary"
-                        >
-                            {stat.number.toLocaleString()}
-                        </Typography>
+        <Grid container spacing={3} sx={{
+        justifyContent: "center",
+        alignItems: "center",
+        }}>
+        {statistics.map((stat, index) => (
+          <Grid  key={index}>
+            <Box sx={{ textAlign: "center", p: 1 }}>
+              <Typography
+                variant="h4"
+                fontWeight="bold"
+                color="primary"
+              >
+                {stat.number.toLocaleString()}
+              </Typography>
 
                         <Typography
                             variant="body2"
@@ -159,62 +162,97 @@ return (
             height: "75%",
         }}
     >
-        <Typography variant="h6" fontWeight="bold" mb={1}>
-            Select User
-        </Typography>
+      {/* User Dropdown */}
+      <Typography variant="h6" fontWeight="bold" mb={1}>
+        Select User
+      </Typography>
+      <Box sx={{ display: 'flex', gap: 2 }}>
+        <Box sx={{ flex: 1 }}>
+      <TextField
+                        fullWidth
+                        required
+                        select
+                        label="Reported User"
+                        name="reportedUser"
+                        value={selectedUser}
+                        slotProps={{//fixes weird react labeling bug about not targetting an id
+                            input: { id: "my-select-input" },
+                            inputLabel: { htmlFor: "my-select-input" },
+                        }}
+                        onChange={async (e) => {setSelectedUser(e.target.value);await fetchReports(e.target.value)}}
+                    >
+                        {userList.map((reason) => (
+                            <MenuItem key={reason.email} value={reason.email}>
+                                {reason.email}
+                            </MenuItem>
+                        ))}
+                    </TextField>
+                    </Box>
+                        <Box sx={{ flex: 1 }}>
+      <TextField
+                        fullWidth
+                        required
+                        select
+                        label="User Reports"
+                        name="reports"
+                        value={selectedReport}
+                        slotProps={{//fixes weird react labeling bug about not targetting an id
+                            input: { id: "my-select-inpu2" },
+                            inputLabel: { htmlFor: "my-select-inpu2" },
+                        }}
+                        onChange={async (e) => {
+                            setSelectedReport(e.target.value);
+                            if(e.target.value != ""){
+                                var pro = reportList.find(item => item._id === e.target.value).product;
+                                if(pro == ""){
+                                    setSelectedProduct({});
+                                }
+                                else{
+                                    var data = await products.getProduct(pro);
+                                    setSelectedProduct(data);
+                                }
+                            }
+                            
+                        }}
+                        disabled={isDisabled}
+                    >
+                        {reportList.map((rep) => (
+                            <MenuItem key={rep._id} value={rep._id}>
+                                {rep._id}
+                            </MenuItem>
+                        ))}
+                    </TextField>
+                    </Box>
+    </Box>
+       <Divider sx={{ mb: 2 }} />
+        {selectedReport && (
+            <Paper
+      elevation={4}
+      sx={{
+        maxWidth: "2000px",
+            width: "100%",
+            p: 1,
+            boxShadow: 3,
+            maxheight: "100px",
+            height: "75%",
+      }}
+    >
+            <Typography variant="h6" fontWeight="bold" mb={1}>
+                        {"Report Reason: " + reportList.find(item => item._id === selectedReport).reason}
+            </Typography>
+            <Typography variant="h6" fontWeight="bold" mb={1}>
+                        {"Comments: " + reportList.find(item => item._id === selectedReport).comment}
+            </Typography>
+            </Paper>
+        )}
+      <Divider sx={{ mb: 2 }} />
+        <Box sx={{ display: 'flex', gap: 2 }}>
 
-        <Box
-            sx={{
-                display: "flex",
-                alignItems: "center",
-                gap: 2,
-            }}
-        >
-            {/* USER DROPDOWN */}
-            <TextField
-                sx={{ width: "50%" }}
-                required
-                select
-                label="Reported User"
-                name="reportedUser"
-                value={selectedUser}
-                onChange={async (e) => {
-                    const targetUser = e.target.value;
-
-                    setSelectedUser(targetUser);
-
-                    setUser({});
-
-                    setReportList([]);
-                    setSelectedProduct({});
-                    setSelectedReport("");
-                    setReportPage(1);
-
-                    if (targetUser !== "") {
-                        await fetchReports(targetUser);
-                    }
-                }}
-            >
-                {/* Add empty menu item */}
-                <MenuItem value="">
-                    <em>No user selected</em>
-                </MenuItem>
-
-                {userList.map((reason) => (
-                    <MenuItem key={reason.email} value={reason.email}>
-                        {reason.email}
-                    </MenuItem>
-                ))}
-            </TextField>
-
-            {/* SELECTED USER */}
-            {selectedUser && user.userType && (
-                <Box
-                    sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 2,
-                    }}
+        <Box sx={{ flex: 1 }}>
+            {user.userType && (
+            <Card
+                sx={{ overflow: "hidden",
+                 }}
                 >
                     {/* PROFILE PICTURE */}
                     {user.profileImage ? (
