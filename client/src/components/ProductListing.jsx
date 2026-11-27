@@ -21,7 +21,8 @@ import SearchIcon from "@mui/icons-material/Search";
 
 import AddIcon from "@mui/icons-material/Add";
 import { useNavigate } from "react-router-dom";
-
+import Product from "./Product";
+import { users } from "../util/api";
 const valueFor = (product, fields) => {
   const key = Object.keys(product).find((field) =>
     fields.includes(field.toLowerCase()),
@@ -39,8 +40,6 @@ const formatPrice = (price) => {
     : price;
 };
 
-
-
 const ProductListings = ({productList, loading, error, currentUserEmail, filterByUser = false, showAddButton = false,}
     
 ) => {
@@ -48,7 +47,16 @@ const ProductListings = ({productList, loading, error, currentUserEmail, filterB
   const [category, setCategory] = useState("all");
 
   const navigate = useNavigate();
+  const [productopen, setProductOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState({});
+  const handleProductClickOpen = () => {
+    setProductOpen(true);
+  };
 
+  const handleProductClose = () => {
+    setProductOpen(false);
+  };
+  const [seller, setSeller] = useState(null);
   const categories = [
     ...new Set(
       productList
@@ -121,6 +129,12 @@ const ProductListings = ({productList, loading, error, currentUserEmail, filterB
         py: 5,
         }}
     >
+        <Product
+                    open={productopen}
+                    onClose={handleProductClose}
+                    product={selectedProduct}
+                    seller={seller}
+                    />
         {/* THE SEARCH STACK*/}
         <Stack
             direction={{ xs: "column", sm: "row" }}
@@ -276,16 +290,26 @@ const ProductListings = ({productList, loading, error, currentUserEmail, filterB
             return (
                 <Card
                 key={id || `${title}-${index}`}
-                onClick={() =>{ 
-                    console.log("Product clicked:", product);
+                onClick={async() =>{ 
+                    /*console.log("Product clicked:", product);
                     console.log("Product name:", valueFor(product, [
                         "title",
                         "name",
                         "productname",
                         "product_name",
-                    ]));
-
-                    navigate("/purchase" , {state: {product}})
+                    ]));*/
+                    if(!productopen){
+                        if(sessionStorage.getItem("userInfo")){
+                            setSelectedProduct(product);
+                            const data = await users.getUserByEmail(product.sellerEmail);
+                            setSeller(data);
+                            handleProductClickOpen();
+                        }
+                        else{
+                            navigate("/signup" );
+                        }
+                    }
+                    //navigate("/purchase" , {state: {product}})
                 }}
                 sx={{ overflow: "hidden",
                     cursor: "pointer",
@@ -294,6 +318,7 @@ const ProductListings = ({productList, loading, error, currentUserEmail, filterB
                         transform: "translateY(-4px)",
                         boxShadow: 6,
                     },
+                    p: 2
                  }}
                 >
                 {typeof image === "string" && image && (
@@ -337,20 +362,21 @@ const ProductListings = ({productList, loading, error, currentUserEmail, filterB
                         {title}
                     </Typography>
 
-                    {(categoryName || condition || listingType) && (
+                    {(categoryName ||  condition) && (
+                        <div>
                     <Typography
-                        variant="body1"
+                        variant="body2"
                         color="text.secondary"
-                        sx={{ mt: 1 }}
                     >
-                        {[
-                            categoryName, condition, listingType === "peer-to-peer" ?
-                            "Pick up from seller" : "Shipping to buyer"
-
-                        ]
-                        .filter(Boolean)
-                        .join(" · ")}
+                        {categoryName}
                     </Typography>
+                    <Typography
+                        variant="body2"
+                        color="text.secondary"
+                    >
+                        {condition}
+                    </Typography>
+                    </div>
                     )}
 
                     {price !== undefined && (
@@ -380,9 +406,18 @@ const ProductListings = ({productList, loading, error, currentUserEmail, filterB
                         {description}
                     </Typography>
                     )} */}
-
+                    {listingType &&
+                    <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{ mt: 2 }}
+                    >
+                        {listingType === "peer-to-peer" ?
+                            "Pick up from seller" : "Shipping to buyer"}
+                    </Typography>
+                    }
                     {(seller || location) && (
-                    <Typography variant="body2" sx={{ mt: 2 }}>
+                    <Typography variant="body2">
                         {[seller, location].filter(Boolean).join(" · ")}
                     </Typography>
                     )}
